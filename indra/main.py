@@ -1,5 +1,5 @@
 import argparse
-from commands import ps, rm, add, run
+from indra.commands import ps, rm, add, run, heartbeat, providers
 
 def main():
     parser = argparse.ArgumentParser(prog="indra", description="Indra CLI to manage VMs")
@@ -23,6 +23,37 @@ def main():
     # # 'run' command
     # run_parser = subparsers.add_parser("run", help="Run a VM")
     # run_parser.set_defaults(func=run.handle)
+
+    # Heartbeat Command
+    heartbeat_parser = subparsers.add_parser("heartbeat", help="Check if MGMT server is online")
+    heartbeat_parser.set_defaults(func=heartbeat.handle)
+
+    # Provider Command
+    provider_parser = subparsers.add_parser("providers", help="Get provider details")
+
+    # Optional argument: Fetch all providers
+    provider_parser.add_argument("-a",
+        "--all", 
+        action="store_true", 
+        help="Get details of all providers"
+    )
+
+    # Positional argument: Fetch specific provider (if provided)
+    provider_parser.add_argument(
+        "provider", 
+        type=int, 
+        nargs="?",
+        help="Provider ID to fetch specific provider details"
+    )
+    provider_parser.add_argument(
+        "-q", "--query",
+        nargs=3,  # Expect two values: vcpus and ram
+        metavar=("vcpus", "ram", "storage"),
+        type=int,
+        help="Query providers with specific vCPUs and RAM"
+    )
+    provider_parser.set_defaults(func=providers.handle)
+
 
     args = parser.parse_args()
     if hasattr(args, "func"):

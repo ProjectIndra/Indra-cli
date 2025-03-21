@@ -15,14 +15,14 @@ def handle(args):
         print("Error: VM ID is required.")
         return
 
-    # Determine API endpoint based on force flag
-    endpoint = "/cli/vms/forceRemove" if args.force else "/cli/vms/remove"
+    # Determine API endpoint based on command
+    command = args.command  # Either "start" or "stop"
+    endpoint = f"/cli/vms/{command}"
     url = f"{base_url}{endpoint}?vm_id={args.vm_id}"
-    print(url)
 
     try:
         response = requests.get(url)
-        data = response.json()
+        data= response.json()
         
         if response.status_code == 200:
             print(data.get("message"))
@@ -33,4 +33,4 @@ def handle(args):
             print(f"{data.get('error')}")
             return
     except requests.exceptions.RequestException as e:
-        print(f"Error removing VM {args.vm_id}: {e}")
+        print(f"Error {command}ing VM {args.vm_id}: {e}")

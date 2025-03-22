@@ -8,11 +8,9 @@ load_dotenv()
 # Function to show available provider commands
 def print_provider_commands():
     commands = [
-        ["indra providers -a", "List all providers"],
-        ["indra providers --all", "Same as -a, lists all providers"],
-        ["indra providers -d 1", "Show details of provider with ID 1"],
-        ["indra providers --details 1", "Same as -d, show provider details"],
-        ["indra providers 1 -q 4 8 100", "Query provider 1 with 4 vCPUs, 8GB RAM, 100GB storage"],
+        ["indra providers -a/--all", "List all providers"],
+        ["indra providers -d/--details 1", "Show details of provider with ID 1"],
+        ["indra providers 1 -q/--query 4 8 100", "Query provider 1 with 4 vCPUs, 8GB RAM, 100GB storage"],
     ]
 
     print("\n🔹 Available Provider Commands:\n")
@@ -65,10 +63,6 @@ def print_provider_query_results(data, provider_id):
 # Function to handle provider-related CLI commands
 def handle(args):
     base_url = os.getenv("MGMT_SERVER")
-
-    if not base_url:
-        print("Error: MGMT_SERVER URL not set in environment variables.")
-        return
 
     # Determine API endpoint based on arguments
     if args.provider is None and not args.all and args.details is None and args.query is None:

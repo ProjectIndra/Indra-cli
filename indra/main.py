@@ -1,32 +1,51 @@
 import argparse
-from indra.commands import ps, rm, add, run, heartbeat, providers, start_stop
+from tabulate import tabulate 
+from indra.commands import create, ps, rm, run, heartbeat, providers, start_stop, connect, disconnect, connection
 
 def main():
     parser = argparse.ArgumentParser(prog="indra", description="Indra CLI to manage VMs")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    # 'ps' command
-    ps_parser = subparsers.add_parser("vms", help="List running VMs")
-    ps_parser.add_argument("-a", "--all", action="store_true", help="Show all VMs")
-    ps_parser.set_defaults(func=ps.handle)
+    # 'vms' command
+    vms_parser = subparsers.add_parser("vms", help="Manage VMs")
+    vms_parser.add_argument("-l", "--list", action="store_true", help="List all commands for 'indra vms'")
+    vms_parser.add_argument("-a", "--all", action="store_true", help="Show all VMs")
+    vms_parser.add_argument("--create", type=int, help="Create a new VM with the given Provider ID")
+    vms_parser.add_argument("--connect", type=int, help="Connect to VM WireGuard network")
+    vms_parser.add_argument("--disconnect", type=int, help="Disconnect from VM WireGuard network")
+    vms_parser.add_argument("--start", type=int, help="Start a VM")
+    vms_parser.add_argument("--stop", type=int, help="Stop a VM")
 
-    # Start VM Command
-    start_parser = subparsers.add_parser("start", help="Start a VM")
-    start_parser.add_argument("vm_id", type=int, help="VM ID to start")
-    start_parser.set_defaults(command="start", func=start_stop.handle)
+    def vms_handle(args):
+        if args.list:
+            commands =[
+                ["indra vms", "Show all active VMx"],
+                ["indra vms -l or indra vms --list", "List all commands for 'indra vms'"],
+                ["indra vms -a or indra vms --all", "List all VMs"],
+                ["indra vms --create <provider_id>", "Create a new VM"],
+                ["indra vms --connect <vm_id>", "Connect to WireGuard network"],
+                ["indra vms --disconnect <vm_id>", "Disconnect from WireGuard network"]
+                ["indra vms --start <vm_id>", "Start a VM"],
+                ["indra vms --stop <vm_id>", "Stop a VM"]
+            ]
+            print("\nAvailable commands for 'indra vms':\n")
+            print(tabulate(commands, headers=["Command", "Description"]),"\n")
+        elif args.create:
+            create.handle(args)
+        elif args.all:
+            ps.handle(args)
+        elif args.connect:
+            connect.handle(args)
+        elif args.disconnect:
+            disconnect.handle(args)
+        elif args.start:
+            start_stop.handle(args)
+        elif args.stop:
+            start_stop.handle(args)
+        else:
+            ps.handle(args)
 
-    # Stop VM Command
-    stop_parser = subparsers.add_parser("stop", help="Stop a VM")
-    stop_parser.add_argument("vm_id", type=int, help="VM ID to stop")
-    stop_parser.set_defaults(command="stop", func=start_stop.handle)
-
-    # # 'add' command
-    # add_parser = subparsers.add_parser("add", help="Add a new VM")
-    # add_parser.set_defaults(func=add.handle)
-
-    # # 'run' command
-    # run_parser = subparsers.add_parser("run", help="Run a VM")
-    # run_parser.set_defaults(func=run.handle)
+    vms_parser.set_defaults(func=vms_handle)
 
     # Heartbeat Command
     heartbeat_parser = subparsers.add_parser("heartbeat", help="Check if MGMT server is online")
@@ -70,6 +89,7 @@ def main():
     )
     rm_parser.set_defaults(func=rm.handle)
 
+    # Parse the arguments
     args = parser.parse_args()
     if hasattr(args, "func"):
         args.func(args)

@@ -6,12 +6,12 @@ load_dotenv()
 
 BASE_URL = os.getenv("MGMT_SERVER")
 
-def disconnect_vm(args):
+def handle(args):
     """Disconnect from the VM WireGuard network."""
     url = f"{BASE_URL}/cli/vms/disconnect?vm_id={args.vm_id}"
-    
+    token = os.getenv("INDRA_SESSION")
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers={"Authorization": f"BearerCLI {token}"})
         data=response.json()
         print(data)
         

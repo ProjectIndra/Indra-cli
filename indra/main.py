@@ -1,6 +1,6 @@
 import argparse
 from tabulate import tabulate 
-from indra.commands import create, ps, rm, run, heartbeat, providers, start_stop, connect, disconnect, connection
+from indra.commands import create, ps, rm, run, heartbeat, providers, start_stop, connect, disconnect, auth
 
 def main():
     parser = argparse.ArgumentParser(prog="indra", description="Indra CLI to manage VMs")
@@ -10,7 +10,7 @@ def main():
     vms_parser = subparsers.add_parser("vms", help="Manage VMs")
     vms_parser.add_argument("-l", "--list", action="store_true", help="List all commands for 'indra vms'")
     vms_parser.add_argument("-a", "--all", action="store_true", help="Show all VMs")
-    vms_parser.add_argument("--create", type=int, help="Create a new VM with the given Provider ID")
+    vms_parser.add_argument("--create", type=str, help="Create a new VM with the given Provider ID")
     vms_parser.add_argument("--connect", type=int, help="Connect to VM WireGuard network")
     vms_parser.add_argument("--disconnect", type=int, help="Disconnect from VM WireGuard network")
     vms_parser.add_argument("--start", type=int, help="Start a VM")
@@ -24,9 +24,9 @@ def main():
                 ["indra vms -a or indra vms --all", "List all VMs"],
                 ["indra vms --create <provider_id>", "Create a new VM"],
                 ["indra vms --connect <vm_id>", "Connect to WireGuard network"],
-                ["indra vms --disconnect <vm_id>", "Disconnect from WireGuard network"]
+                ["indra vms --disconnect <vm_id>", "Disconnect from WireGuard network"],
                 ["indra vms --start <vm_id>", "Start a VM"],
-                ["indra vms --stop <vm_id>", "Stop a VM"]
+                ["indra vms --stop <vm_id>", "Stop a VM"],
             ]
             print("\nAvailable commands for 'indra vms':\n")
             print(tabulate(commands, headers=["Command", "Description"]),"\n")
@@ -60,13 +60,13 @@ def main():
     )
     provider_parser.add_argument(
         "-d", "--details",
-        type=int,
+        type=str,
         metavar="provider_id",
         help="Get details of a specific provider"
     )
     provider_parser.add_argument(
         "provider",
-        type=int,
+        type=str,
         nargs="?",
         help="Provider ID for querying specific provider"
     )
@@ -88,6 +88,11 @@ def main():
         help="Force remove the VM"
     )
     rm_parser.set_defaults(func=rm.handle)
+
+    # Auth Command
+    auth_parser = subparsers.add_parser("auth", help="Authenticate with backend")
+    auth_parser.add_argument("token", type=str, help="Authentication token")
+    auth_parser.set_defaults(func=auth.handle)
 
     # Parse the arguments
     args = parser.parse_args()

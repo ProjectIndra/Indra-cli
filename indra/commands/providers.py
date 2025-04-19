@@ -18,8 +18,8 @@ def print_provider_commands():
 
 # Function to print all providers (-a or --all)
 def print_all_providers(data):
-    active_providers = data.get("active_providers", [])
-    
+    active_providers = data.get("all_providers", [])
+    print(data)
     if not active_providers:
         print("No active providers found.")
         return
@@ -28,14 +28,19 @@ def print_all_providers(data):
         [
             provider.get("provider_id", "N/A"),
             provider.get("provider_name", "N/A"),
-            provider.get("provider_cpu", "N/A"),
-            provider.get("provider_ram", "N/A"),
+            provider.get("provider_allowed_vcpu", "N/A"),
+            provider.get("provider_allowed_ram", "N/A"),
+            provider.get("provider_allowed_storage", "N/A"),
+            provider.get("provider_allowed_networks", "N/A"),
+            provider.get("provider_rating", "N/A"),
+            provider.get("provider_type", "N/A"),
+            provider.get("user_id", "N/A"),
             provider.get("provider_status", "N/A"),
         ]
         for provider in active_providers
     ]
 
-    headers = ["Provider ID", "Provider Name", "CPU", "RAM", "Status"]
+    headers = ["Provider ID", "Provider Name", "Max CPU", "Max RAM", "Max Storage","Max Networks","Rating","Type","UserId", "Status"]
     print("\n🔹 List of All Providers:\n")
     print(tabulate(table_data, headers=headers), "\n")
 
@@ -54,7 +59,8 @@ def print_provider_details(data):
 def print_provider_query_results(data, provider_id):
     can_create = data.get("can_create", False)
     if not can_create:
-        print(f"No matching providers found for the given query for {provider_id}.")
+        print(f"Matching providers found cannot create vm for the given query for {provider_id}.")
+        print(f"error: {data}")
     else:
         print(f"Matching provider found for {provider_id}")
 
@@ -70,22 +76,31 @@ def handle(args):
         return
     if args.provider is not None and args.query:
         vcpus, ram, storage = args.query
-        endpoint = f"/cli/providers/query?provider_id={args.provider}&vcpus={vcpus}&ram={ram}&storage={storage}"
+        endpoint = f"/providers/query?provider_id={args.provider}&vcpus={vcpus}&ram={ram}&storage={storage}"
     elif args.details is not None:
-        endpoint = f"/cli/providers/details?provider_id={args.details}"
+        endpoint = f"/providers/details?provider_id={args.details}"
     elif args.all:
-        endpoint = "/cli/providers/lists"
+        endpoint = "/providers/lists"
     else:
         print("Error: Invalid command usage. Provide a valid flag or provider ID.")
         return
 
     url = f"{base_url}{endpoint}"
+    token = os.getenv("INDRA_SESSION")
+    json_data={
+        "provider_id": args.provider,
+        "vcpus": args.query[0] if args.query else None,
+        "ram": args.query[1] * 1024 if args.query else None,
+        "storage": args.query[2] * 1024 if args.query else None,
+        "details": args.details
+    }
+    # print(args.query[1])
 
     try:
-        response = requests.get(url)
+        response = requests.post(url,json=json_data, headers={"Authorization": f"BearerCLI {token}","Content-Type": "application/json"})
         response.raise_for_status()  # Handle HTTP errors (4xx, 5xx)
         data = response.json()
-
+        print(data)
         if not data:
             print("No providers found.")
             return

@@ -2,9 +2,9 @@ import os
 import sys
 import ctypes
 import platform
-from wireguard import WireGuard
+# from wireguard import WireGuard
 from pyroute2 import IPRoute
-from python_wireguard import Client, ServerConnection, Key, Interface
+# from python_wireguard import Client, ServerConnection, Key, Interface
 
 # Configuration
 WG_INTERFACE = "wg-client"

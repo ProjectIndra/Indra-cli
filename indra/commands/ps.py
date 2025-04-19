@@ -12,11 +12,12 @@ def handle(args):
         print("Error: MGMT_SERVER URL not set in environment variables.")
         return
 
-    endpoint = "/cli/vms/allVms" if args.all else "/cli/vms/allActiveVms"
+    endpoint = "/vms/allVms" if args.all else "/vms/allActiveVms"
     url = f"{base_url}{endpoint}"
+    token = os.getenv("INDRA_SESSION")
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers={"Authorization": f"BearerCLI {token}"})
         response.raise_for_status()  # Raise an error for bad responses (4xx, 5xx)
 
         data = response.json()

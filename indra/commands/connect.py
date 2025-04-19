@@ -1,163 +1,3 @@
-# import os
-# import requests
-# import subprocess
-# from dotenv import load_dotenv
-# from tabulate import tabulate
-# import ctypes
-# import platform
-
-# load_dotenv()
-
-# BASE_URL = os.getenv("MGMT_SERVER")
-# WG_INTERFACE = "wg-client"  # Change this if your system uses a different WireGuard interface
-# KEYS_DIR = os.path.expanduser("~/.wireguard_keys")  # Store keys here
-
-# def is_wireguard_installed():
-#     """Check if WireGuard is installed on the system."""
-#     try:
-#         print("🔹 Checking if WireGuard is installed...")
-#         subprocess.run(["wg", "--version"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-#         return True
-#     except FileNotFoundError:
-#         return False
-
-# def install_wireguard():
-#     """Install WireGuard based on OS."""
-#     os_type = platform.system().lower()
-
-#     if "linux" in os_type:
-#         print("🔹 Installing WireGuard on Linux...")
-#         subprocess.run(["sudo", "apt", "install", "-y", "wireguard"], check=True)
-#     elif "windows" in os_type:
-#         print("Please install WireGuard manually from https://www.wireguard.com/install/")
-#         exit(1)
-#     else:
-#         print("Unsupported OS. Only Windows & Linux are supported.")
-#         exit(1)
-
-# def generate_wireguard_keys():
-#     """Generate private and public keys for WireGuard."""
-#     if not os.path.exists(KEYS_DIR):
-#         os.makedirs(KEYS_DIR)
-
-#     private_key_file = os.path.join(KEYS_DIR, "private.key")
-#     public_key_file = os.path.join(KEYS_DIR, "public.key")
-
-#     if not os.path.exists(private_key_file) or not os.path.exists(public_key_file):
-#         print("🔹 Generating WireGuard keys...")
-#         private_key = subprocess.check_output(["wg", "genkey"]).decode().strip()
-#         public_key = subprocess.check_output(["echo", private_key, "|", "wg", "pubkey"]).decode().strip()
-
-#         with open(private_key_file, "w") as pk:
-#             pk.write(private_key)
-#         with open(public_key_file, "w") as pub:
-#             pub.write(public_key)
-
-#     return private_key_file, public_key_file
-
-# def run_wg_show():
-#     """Run 'wg show' with elevated privileges on Windows."""
-#     if platform.system() == "Windows":
-#         # Check if script is running as Administrator
-#         if not ctypes.windll.shell32.IsUserAnAdmin():
-#             print("⚠️ Please run this script as Administrator!")
-#             return None
-
-#         # Run wg show in PowerShell
-#         try:
-#             result = subprocess.run(
-#                 ["powershell", "-Command", "Start-Process wg -ArgumentList 'show' -Verb RunAs"],
-#                 capture_output=True, text=True, shell=True
-#             )
-#             return result.stdout
-#         except subprocess.CalledProcessError as e:
-#             print(f"Error running 'wg show': {e}")
-#             return None
-#     else:
-#         # Linux/macOS case
-#         try:
-#             result = subprocess.run(["sudo", "wg", "show"], capture_output=True, text=True, check=True)
-#             return result.stdout
-#         except subprocess.CalledProcessError as e:
-#             print(f"Error running 'wg show': {e}")
-#             return None
-
-
-# def setup_temp_wireguard_peer(vm_data):
-#     """Setup a temporary WireGuard peer using the VM’s WireGuard details."""
-#     peer_public_key = vm_data.get("public_key")
-#     allowed_ips = vm_data.get("allowed_ips")
-
-#     if not peer_public_key or not allowed_ips:
-#         print("Missing WireGuard peer details from server.")
-#         return
-
-#     # Get our public key
-#     private_key_file, public_key_file = generate_wireguard_keys()
-#     print(private_key_file, public_key_file)
-#     with open(public_key_file, "r") as pk:
-#         user_public_key = pk.read().strip()
-
-#     # Configure WireGuard
-#     print("🔹Configuring WireGuard peer...")
-#     try:
-#         output = run_wg_show()
-#         if output:
-#             print(output)
-
-#         subprocess.run([
-#             "wg", "set", WG_INTERFACE,
-#             "peer", peer_public_key,
-#             "allowed-ips", allowed_ips
-#         ], check=True)
-
-#         # Send our public key back to the server
-#         # response = requests.post(f"{BASE_URL}/cli/vms/connect/send_key", json={
-#         #     "vm_id": vm_data.get("vm_id"),
-#         #     "user_public_key": user_public_key
-#         # })
-#         # response.raise_for_status()
-#         print("WireGuard peer setup complete!")
-
-#     except subprocess.CalledProcessError as e:
-#         print(f"Error setting up WireGuard peer: {e}")
-
-# def handle(args):
-#     """Connect to the VM WireGuard network."""
-#     # print("is installed:",is_wireguard_installed())
-#     if not is_wireguard_installed():
-#         print("WireGuard is not installed.")
-#         install_wireguard()
-
-#     url = f"{BASE_URL}/cli/vms/connect?vm_id={args.connect}"
-
-#     try:
-#         # response = requests.get(url)
-#         # data = response.json()
-#         data = {
-#             "public_key": "cFDZrUpWaKunkwqDnzcQC+p+Tb/H/8KxcvrQnx+CWlQ=",
-#             "allowed_ips": "10.0.0.2/24",
-# 		}
-#         if True:
-#             # print(data.get("message"))
-#             # print("\n🔗 **Connected to WireGuard!**\n")
-#             print(tabulate([
-#                 ["Public Key", data.get("public_key", "N/A")],
-#                 ["Allowed IPs", data.get("allowed_ips", "N/A")]
-#             ], headers=["Attribute", "Value"]))
-
-#             # Setup WireGuard Peer
-#             setup_temp_wireguard_peer(data)
-
-#         elif 1 == 500:
-#             print(f"{data.get('error', f'Error connecting VM {args.vm_id}')}")
-
-#         else:
-#             print(f"{data.get('error')}")
-
-#     except requests.exceptions.RequestException as e:
-#         print(f"Error connecting to VM WireGuard: {e}")
-# ---------------------------------------------------------------------------------
 
 import subprocess
 import sys
@@ -342,8 +182,6 @@ def setup_temp_wireguard_peer(peer_public_key, allowed_ips):
                 peer_public_key,
                 "allowed-ips",
                 allowed_ips,
-                "persistent-keepalive",
-                "25"
             ],
             check=True,
         )
@@ -353,7 +191,7 @@ def setup_temp_wireguard_peer(peer_public_key, allowed_ips):
         print(f"Error setting up WireGuard peer: {e}")
 
 
-if __name__ == "__main__":
+def handle(args):
     request_admin()
     # OR run in admin shell
     # install wireguard if not installed.
@@ -366,3 +204,153 @@ if __name__ == "__main__":
     peer_public_key, allowed_ips = "cFDZrUpWaKunkwqDnzcQC+p+Tb/H/8KxcvrQnx+CWlQ=", "10.0.0.2/32"
     setup_temp_wireguard_peer(peer_public_key, allowed_ips)
     print("Done")
+
+# # -------------------------------------------------
+# import subprocess
+# import sys
+# import ctypes
+# import platform
+# import os
+# import time
+
+# WG_INTERFACE = "wg-client"  # Change this if your WireGuard interface has a different name
+# WG_CONFIG_PATH = f"C:\\Users\\hetar\\Documents\\WireGuard\\{WG_INTERFACE}.conf"  # Adjust this to match the UI config path
+# KEYS_DIR = "C:\\Users\\hetar\\Documents\\WireGuard\\keys"  # Store keys here
+# WIREGUARD_EXE = "C:\\Program Files\\WireGuard\\wireguard.exe"  # Default WireGuard path on Windows
+
+
+# def request_admin():
+#     """Request administrator privileges via UAC popup on Windows."""
+#     if platform.system() == "Windows" and not ctypes.windll.shell32.IsUserAnAdmin():
+#         print("Requesting Administrator privileges...")
+#         ctypes.windll.shell32.ShellExecuteW(
+#             None, "runas", sys.executable, " ".join(sys.argv), None, 1
+#         )
+#         sys.exit()
+
+
+# def check_wg_installed():
+#     """Check if WireGuard is installed."""
+#     if platform.system().lower() == "windows":
+#         return os.path.exists(WIREGUARD_EXE)
+#     else:
+#         try:
+#             subprocess.run(
+#                 ["wg", "--version"],
+#                 stdout=subprocess.DEVNULL,
+#                 stderr=subprocess.DEVNULL,
+#                 check=True,
+#             )
+#             return True
+#         except FileNotFoundError:
+#             return False
+
+
+# def install_wireguard():
+#     """Install WireGuard based on OS."""
+#     os_type = platform.system().lower()
+
+#     if "linux" in os_type:
+#         print("🔹 Installing WireGuard on Linux...")
+#         subprocess.run(["sudo", "apt", "install", "-y", "wireguard"], check=True)
+#     elif "windows" in os_type:
+#         try:
+#             subprocess.run(
+#                 [
+#                     "winget",
+#                     "install",
+#                     "--id",
+#                     "WireGuard.WireGuard",
+#                     "-e",
+#                     "--source",
+#                     "winget",
+#                     "--silent",
+#                 ],
+#                 check=True,
+#                 shell=True,
+#             )
+#             print("✅ WireGuard installed successfully!")
+#         except subprocess.CalledProcessError as e:
+#             print(f"❌ Error installing WireGuard: {e}")
+#     else:
+#         print("❌ Error installing WireGuard: Unsupported OS.")
+
+
+# def generate_wireguard_keys():
+#     """Generate private and public keys for WireGuard."""
+#     if not os.path.exists(KEYS_DIR):
+#         os.makedirs(KEYS_DIR)
+
+#     private_key_file = os.path.join(KEYS_DIR, "private.key")
+#     public_key_file = os.path.join(KEYS_DIR, "public.key")
+
+#     if not os.path.exists(private_key_file) or not os.path.exists(public_key_file):
+#         print("🔹 Generating WireGuard keys...")
+#         private_key = subprocess.check_output(["wg", "genkey"]).decode().strip()
+#         public_key = (
+#             subprocess.check_output(["wg", "pubkey"], input=private_key.encode())
+#             .decode()
+#             .strip()
+#         )
+
+#         with open(private_key_file, "w") as pk:
+#             pk.write(private_key)
+#         with open(public_key_file, "w") as pub:
+#             pub.write(public_key)
+#     else:
+#         with open(private_key_file, "r") as pk:
+#             private_key = pk.read().strip()
+#         with open(public_key_file, "r") as pub:
+#             public_key = pub.read().strip()
+
+#     return private_key, public_key
+
+
+# def create_wireguard_config(interface_name, private_key, address, listen_port, save_path):
+#     """
+#     Create a WireGuard config file.
+#     """
+#     wg_config_content = f"""[Interface]
+# PrivateKey = {private_key}
+# Address = {address}
+# ListenPort = {listen_port}
+
+# [Peer]
+# PublicKey = cFDZrUpWaKunkwqDnzcQC+p+Tb/H/8KxcvrQnx+CWlQ=
+# AllowedIPs = 10.0.0.2/32
+# """
+
+#     try:
+#         os.makedirs(os.path.dirname(save_path), exist_ok=True)
+#         with open(save_path, "w") as config_file:
+#             config_file.write(wg_config_content)
+
+#         print(f"✅ WireGuard config file created at: {save_path}")
+#     except Exception as e:
+#         print(f"❌ Error creating WireGuard config file: {e}")
+
+
+# def restart_wireguard_interface():
+#     """Restart WireGuard interface using wireguard.exe (Windows only)."""
+#     if platform.system().lower() == "windows":
+#         try:
+#             # print(f"🔄 Restarting WireGuard interface: {WG_INTERFACE}")
+#             # subprocess.run([WIREGUARD_EXE, "/installtunnelservice", WG_INTERFACE], check=True)
+#             time.sleep(2)  # Allow time for service to stop
+#             subprocess.run([WIREGUARD_EXE, "/installtunnelservice", WG_CONFIG_PATH], check=True)
+#             print(f"✅ WireGuard interface '{WG_INTERFACE}' restarted successfully.")
+#         except subprocess.CalledProcessError as e:
+#             print(f"❌ Error restarting WireGuard: {e}")
+
+
+# if __name__ == "__main__":
+#     request_admin()
+    
+#     if not check_wg_installed():
+#         install_wireguard()
+    
+#     private_key, public_key = generate_wireguard_keys()
+#     create_wireguard_config(WG_INTERFACE, private_key, "10.0.0.1/24", "3000", WG_CONFIG_PATH)
+#     restart_wireguard_interface()
+    
+#     print("✅ WireGuard setup complete!")

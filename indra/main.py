@@ -11,10 +11,10 @@ def main():
     vms_parser.add_argument("-l", "--list", action="store_true", help="List all commands for 'indra vms'")
     vms_parser.add_argument("-a", "--all", action="store_true", help="Show all VMs")
     vms_parser.add_argument("--create", type=str, help="Create a new VM with the given Provider ID")
-    vms_parser.add_argument("--connect", type=int, help="Connect to VM WireGuard network")
-    vms_parser.add_argument("--disconnect", type=int, help="Disconnect from VM WireGuard network")
-    vms_parser.add_argument("--start", type=int, help="Start a VM")
-    vms_parser.add_argument("--stop", type=int, help="Stop a VM")
+    vms_parser.add_argument("--connect", type=str, help="Connect to VM WireGuard network")
+    vms_parser.add_argument("--disconnect", type=str, help="Disconnect from VM WireGuard network")
+    vms_parser.add_argument("--start", type=str, help="Start a VM")
+    vms_parser.add_argument("--stop", type=str, help="Stop a VM")
 
     def vms_handle(args):
         if args.list:
@@ -81,7 +81,7 @@ def main():
 
     # VM Removal Command
     rm_parser = subparsers.add_parser("rm", help="Remove a VM")
-    rm_parser.add_argument("vm_id", type=int, help="VM ID to remove")
+    rm_parser.add_argument("vm_name", type=str, help="VM Name to remove")
     rm_parser.add_argument(
         "-f", "--force",
         action="store_true",

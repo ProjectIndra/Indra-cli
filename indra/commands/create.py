@@ -68,23 +68,23 @@ def handle(args):
     payload = {
         "vm_name": vm_name,
         "provider_id": provider_id,
-        "vcpus": vcpus,
-        "ram": ram,
-        "storage": storage,
+        "vcpus": vcpus*1024,
+        "ram": ram*1024,
+        "storage": storage*1024,
         "vm_image_type": vm_image,
-        # "client_id": client_id,
         "remarks": remarks
     }
 
     response = requests.post(create_vm_url, json=payload, headers={"Authorization": f"BearerCLI {token}"})
     data=response.json()
-    print(data)
+    # print(data)
 
     if response.status_code == 200:
+            print("\n---------------------VM created successfully!----------------------")
             print(data.get("message"))
     elif response.status_code == 500:
+        print("\n--------------------Invalid VM creation request. Try again.----------------------")
         print(data.get('error',"Failed to reach provider"))
-        print("Invalid VM creation request. Try again.")
         return
     else:
         print(f"{data.get('error')}")

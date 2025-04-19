@@ -76,13 +76,17 @@ def handle(args):
         return
     if args.provider is not None and args.query:
         vcpus, ram, storage = args.query
-        endpoint = f"/providers/query?provider_id={args.provider}&vcpus={vcpus}&ram={ram}&storage={storage}"
+        endpoint = f"/providers/query"
+        type="POST"
     elif args.details is not None:
         endpoint = f"/providers/details?provider_id={args.details}"
+        type="GET"
     elif args.all:
         endpoint = "/providers/lists"
+        type="GET"
     else:
         print("Error: Invalid command usage. Provide a valid flag or provider ID.")
+        print_provider_commands()
         return
 
     url = f"{base_url}{endpoint}"
@@ -97,7 +101,12 @@ def handle(args):
     # print(args.query[1])
 
     try:
-        response = requests.post(url,json=json_data, headers={"Authorization": f"BearerCLI {token}","Content-Type": "application/json"})
+        if(type == "POST"):
+            response = requests.post(url=url,json=json_data, headers={"Authorization": f"BearerCLI {token}","Content-Type": "application/json"})
+        elif(type == "GET"):
+            response = requests.get(url=url,json=json_data, headers={"Authorization": f"BearerCLI {token}","Content-Type": "application/json"})
+        else:
+            return
         response.raise_for_status()  # Handle HTTP errors (4xx, 5xx)
         data = response.json()
         print(data)

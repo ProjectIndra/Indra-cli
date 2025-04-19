@@ -11,26 +11,26 @@ def handle(args):
         print("Error: MGMT_SERVER URL not set in environment variables.")
         return
 
-    if not args.vm_id:
-        print("Error: VM ID is required.")
+    if not args.vm_name:
+        print("Error: VM Name is required.")
         return
 
     # Determine API endpoint based on force flag
-    endpoint = "/cli/vms/forceRemove" if args.force else "/cli/vms/remove"
-    url = f"{base_url}{endpoint}?vm_id={args.vm_id}"
-    print(url)
+    endpoint = "/vms/forceRemoveCLI" if args.force else "/vms/removeCLI"
+    url = f"{base_url}{endpoint}?vm_name={args.vm_name}"
+    token= os.getenv("INDRA_SESSION")
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers={"Authorization": f"BearerCLI {token}"})
         data = response.json()
         
         if response.status_code == 200:
             print(data.get("message"))
         elif response.status_code == 500:
-               print(f"{data.get('error',f"Error removing VM {args.vm_id}")}")
+               print(f"{data.get('error',f"Error removing VM {args.vm_name}")}")
                return
         else:
             print(f"{data.get('error')}")
             return
     except requests.exceptions.RequestException as e:
-        print(f"Error removing VM {args.vm_id}: {e}")
+        print(f"Error removing VM {args.vm_name}: {e}")

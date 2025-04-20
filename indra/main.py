@@ -1,10 +1,19 @@
 import argparse
-from tabulate import tabulate 
+from tabulate import tabulate
+import os
+
+# internal imports
 from indra.commands import create, ps, rm, run, heartbeat, providers, start_stop, connect, disconnect, auth
+from indra.env import load_env, set_persistent_env_var
 
 def main():
     parser = argparse.ArgumentParser(prog="indra", description="Indra CLI to manage VMs")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    # Auth Command
+    auth_parser = subparsers.add_parser("auth", help="Authenticate with backend")
+    auth_parser.add_argument("token", type=str, help="Authentication token")
+    auth_parser.set_defaults(func=auth.handle)
 
     # 'vms' command
     vms_parser = subparsers.add_parser("vms", help="Manage VMs")
@@ -89,13 +98,18 @@ def main():
     )
     rm_parser.set_defaults(func=rm.handle)
 
-    # Auth Command
-    auth_parser = subparsers.add_parser("auth", help="Authenticate with backend")
-    auth_parser.add_argument("token", type=str, help="Authentication token")
-    auth_parser.set_defaults(func=auth.handle)
-
     # Parse the arguments
     args = parser.parse_args()
+
+    load_env()
+
+    if os.getenv("INDRA_SESSION") is None and args.command != "auth":
+        print("Welcome to Indra CLI!")
+        print("- No session found. Please login using 'indra auth <token>'")
+        print("- You can get this token from the Indra web app.")
+        print("- For more information, visit: https://indra.ai/docs/cli")
+        exit(1)
+
     if hasattr(args, "func"):
         args.func(args)
     else:

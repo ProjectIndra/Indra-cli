@@ -27,7 +27,7 @@ def handle(args):
         if response.status_code == 200:
             print(data.get("message"))
         elif response.status_code == 500:
-               print(f"{data.get('error',f"Error removing VM {args.vm_name}")}")
+               print(f"{data.get('error',f'Error removing VM {args.vm_name}')}")
                return
         else:
             print(f"{data.get('error')}")

@@ -18,7 +18,7 @@ def handle(args):
         if response.status_code == 200:
             print(data.get("message"))
         elif response.status_code == 500:
-               print(f"{data.get('error',f"Error Disconnecting VM {args.vm_id}")}")
+               print(f"{data.get('error',f'Error Disconnecting VM {args.vm_id}')}")
                return
         else:
             print(f"{data.get('error')}")

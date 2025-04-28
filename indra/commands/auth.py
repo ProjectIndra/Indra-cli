@@ -11,7 +11,7 @@ def handle(args):
     token = args.token
     url = f"{BASE_URL}/cli/profile/verifyCliToken"
 
-    print(f"🔑 Authenticating with token: {token}")
+    print(f"Authenticating with token: {token}")
     
     try:
         response = requests.post(url, json={
@@ -27,10 +27,10 @@ def handle(args):
             session_token = data.get("session_token")
             if session_token:
                 set_persistent_env_var("INDRA_SESSION", session_token)
-                print("\n✅ Authentication successful. Session token saved.")
+                print("\n Authentication successful. Session token saved.")
             else:
-                print("❌ No session token received from server.")
+                print(" No session token received from server.")
         else:
-            print(f"❌ Authentication failed: {data.get('error', 'Unknown error')}")
+            print(f" Authentication failed: {data.get('error', 'Unknown error')}")
     except requests.RequestException as e:
-        print(f"❌ Error connecting to server: {e}")
+        print(f" Error connecting to server: {e}")

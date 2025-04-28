@@ -18,44 +18,17 @@ def handle(args):
     provider_id = args.create  # Comes from CLI argument
     token = os.getenv("INDRA_SESSION")
 
-    # Step 1: Verify provider ID
-    # verify_provider_url = f"{base_url}/cli/vms/create/verify_provider?provider_id=provider-{provider_id}"
-    # response = requests.get(verify_provider_url, headers={"Authorization": f"BearerCLI {token}"})
-    # print(response.json())
-    # if response.status_code == 500:
-    #     print("Invalid Provider ID. Try again.")
-    #     return
-    # elif response.status_code == 200:
-    #     print("Provider verified!")
-    # else:
-    #     print("Provider not found. Try again")
-    #     return
-
     # Step 2: Ask for vCPU, RAM, and Storage and verify
     vcpus = get_input("Enter required vCPUs", int)
     ram = get_input("Enter required RAM (in GB)", int)
     storage = get_input("Enter required Storage (in GB)", int)
 
-    # verify_specs_url = f"{base_url}/vms/create/verify_specs?vcpus={vcpus}&ram={ram}&storage={storage}"
-    # json_data = {
-    #     "provider_id": provider_id,
-    #     "vcpus": vcpus,
-    #     "ram": ram * 1024,  # Convert GB to MB
-    #     "storage": storage * 1024  # Convert GB to MB
-    # }
-    # response = requests.post(verify_specs_url,json=json_data,  headers={"Authorization": f"BearerCLI {token}"})
-    # print(response.json())
-    
-    # if response.status_code == 500:
-    #     print("Invalid Specs. Try again.")
-    #     return
-    # elif response.status_code == 200:
-    #     print("Specs verified!")
-    # else:
-    #     print("Specs not found. Try again.")
-
     # Step 3: Ask for VM Name & Remarks
     vm_name = get_input("Enter VM Name")
+    if not vm_name:
+        print("VM Name cannot be empty. Please try again.")
+        return
+
     remarks = get_input("Enter Remarks")
 
     # Hardcoded VM Image
@@ -68,7 +41,7 @@ def handle(args):
     payload = {
         "vm_name": vm_name,
         "provider_id": provider_id,
-        "vcpus": vcpus*1024,
+        "vcpus": vcpus,
         "ram": ram*1024,
         "storage": storage*1024,
         "vm_image_type": vm_image,

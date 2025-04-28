@@ -3,7 +3,7 @@ from tabulate import tabulate
 import os
 
 # internal imports
-from indra.commands import create, ps, rm, run, heartbeat, providers, start_stop, connect, disconnect, auth
+from indra.commands import create, ps, rm, heartbeat, providers, start_stop, disconnect, auth, windows_wg
 from indra.env import load_env, set_persistent_env_var
 
 def main():
@@ -16,26 +16,30 @@ def main():
     auth_parser.set_defaults(func=auth.handle)
 
     # 'vms' command
-    vms_parser = subparsers.add_parser("vms", help="Manage VMs")
-    vms_parser.add_argument("-l", "--list", action="store_true", help="List all commands for 'indra vms'")
+    vms_parser = subparsers.add_parser("vms", help="Manage VMs", add_help=False)
     vms_parser.add_argument("-a", "--all", action="store_true", help="Show all VMs")
     vms_parser.add_argument("--create", type=str, help="Create a new VM with the given Provider ID")
     vms_parser.add_argument("--connect", type=str, help="Connect to VM WireGuard network")
     vms_parser.add_argument("--disconnect", type=str, help="Disconnect from VM WireGuard network")
     vms_parser.add_argument("--start", type=str, help="Start a VM")
     vms_parser.add_argument("--stop", type=str, help="Stop a VM")
+    vms_parser.add_argument("-rm","--remove", type=str, help="Remove a VM")
+    vms_parser.add_argument("-f", "--force", action="store_true", help="Force remove a VM")
+    vms_parser.add_argument("-h", "--help", action="store_true", help="Show help for 'indra vms'")
 
     def vms_handle(args):
-        if args.list:
+        if args.help:
             commands =[
                 ["indra vms", "Show all active VMx"],
-                ["indra vms -l or indra vms --list", "List all commands for 'indra vms'"],
                 ["indra vms -a or indra vms --all", "List all VMs"],
-                ["indra vms --create <provider_id>", "Create a new VM"],
-                ["indra vms --connect <vm_id>", "Connect to WireGuard network"],
-                ["indra vms --disconnect <vm_id>", "Disconnect from WireGuard network"],
-                ["indra vms --start <vm_id>", "Start a VM"],
-                ["indra vms --stop <vm_id>", "Stop a VM"],
+                ["indra vms --create <provider_name>", "Create a new VM"],
+                ["indra vms --connect <vm_name>", "Connect to WireGuard network"],
+                ["indra vms --disconnect <vm_name>", "Disconnect from WireGuard network"],
+                ["indra vms --start <vm_name>", "Start a VM"],
+                ["indra vms --stop <vm_name>", "Stop a VM"],
+                ["indra vms --remove <vm_name>", "Remove a VM"],
+                ["indra vms --remove -f or --force", "Force remove a VM"],
+                ["indra vms -h or indra vms --help", "Show help for 'indra vms'"],
             ]
             print("\nAvailable commands for 'indra vms':\n")
             print(tabulate(commands, headers=["Command", "Description"]),"\n")
@@ -44,13 +48,15 @@ def main():
         elif args.all:
             ps.handle(args)
         elif args.connect:
-            connect.handle(args)
+            windows_wg.handle(args)
         elif args.disconnect:
             disconnect.handle(args)
         elif args.start:
             start_stop.handle(args)
         elif args.stop:
             start_stop.handle(args)
+        elif args.remove:
+            rm.handle(args)
         else:
             ps.handle(args)
 
@@ -88,15 +94,6 @@ def main():
     )
     provider_parser.set_defaults(func=providers.handle)
 
-    # VM Removal Command
-    rm_parser = subparsers.add_parser("rm", help="Remove a VM")
-    rm_parser.add_argument("vm_name", type=str, help="VM Name to remove")
-    rm_parser.add_argument(
-        "-f", "--force",
-        action="store_true",
-        help="Force remove the VM"
-    )
-    rm_parser.set_defaults(func=rm.handle)
 
     # Parse the arguments
     args = parser.parse_args()

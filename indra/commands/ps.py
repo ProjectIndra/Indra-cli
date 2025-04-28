@@ -21,7 +21,7 @@ def handle(args):
         response.raise_for_status()  # Raise an error for bad responses (4xx, 5xx)
 
         data = response.json()
-        print(data)
+        # print(data)
         # Extract relevant fields
         table_data = []
 

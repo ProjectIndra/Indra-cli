@@ -21,7 +21,6 @@ def handle(args):
         response.raise_for_status()  # Raise an error for bad responses (4xx, 5xx)
 
         data = response.json()
-        # print(data)
         # Extract relevant fields
         table_data = []
 
@@ -40,6 +39,12 @@ def handle(args):
                 ]
                 for vm in active_vms
             ]
+            # Define headers
+            headers = ["VM ID", "VM Name", "Provider", "WireGuard IP", "WireGuard Status"]
+            # Print table
+            print("\nAll VMs:")
+            print(tabulate(table_data, headers=headers))
+            print("\n")
         elif args.all:
             all_vms = data.get("all_vms",[])
             if not all_vms:
@@ -50,20 +55,20 @@ def handle(args):
                     vm.get("vm_id", "N/A"),
                     vm.get("vm_name", "N/A"),
                     vm.get("provider_name", "N/A"),
+                    vm.get("status", "N/A"),
                     vm.get("wireguard_ip", "N/A"),
                     "Connected" if vm.get("wireguard_status") else "Disconnected"
                 ]
                 for vm in all_vms
             ]
+            # Define headers
+            headers = ["VM ID", "VM Name", "Provider","Status", "WireGuard IP", "WireGuard Status"]
+            # Print table
+            print("\nAll VMs:")
+            print(tabulate(table_data, headers=headers))
+            print("\n")
         else:
             print("Argument parsing has gone wrong.")
-
-        
-        # Define headers
-        headers = ["VM ID", "VM Name", "Provider", "WireGuard IP", "WireGuard Status"]
-        
-        # Print table
-        print(tabulate(table_data, headers=headers))
 
     except requests.exceptions.RequestException as e:
         print(f"Error fetching VMs: {e}")

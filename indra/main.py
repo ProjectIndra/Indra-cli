@@ -3,7 +3,7 @@ from tabulate import tabulate
 import os
 
 # internal imports
-from indra.commands import create, ps, rm, heartbeat, providers, start_stop, disconnect, auth, windows_wg
+from indra.commands import connect, create, ps, rm, heartbeat, providers, start_stop, disconnect, auth
 from indra.env import load_env, set_persistent_env_var
 
 def main():
@@ -24,7 +24,7 @@ def main():
     vms_parser.add_argument("--start", type=str, help="Start a VM")
     vms_parser.add_argument("--stop", type=str, help="Stop a VM")
     vms_parser.add_argument("-rm","--remove", type=str, help="Remove a VM")
-    vms_parser.add_argument("-f", "--force", action="store_true", help="Force remove a VM")
+    vms_parser.add_argument("-f","--force", action="store_true", help="Force remove a VM")
     vms_parser.add_argument("-h", "--help", action="store_true", help="Show help for 'indra vms'")
 
     def vms_handle(args):
@@ -38,7 +38,7 @@ def main():
                 ["indra vms --start <vm_name>", "Start a VM"],
                 ["indra vms --stop <vm_name>", "Stop a VM"],
                 ["indra vms --remove <vm_name>", "Remove a VM"],
-                ["indra vms --remove -f or --force", "Force remove a VM"],
+                ["indra vms --remove -f or --force <vm_name>", "Force remove a VM"],
                 ["indra vms -h or indra vms --help", "Show help for 'indra vms'"],
             ]
             print("\nAvailable commands for 'indra vms':\n")
@@ -48,7 +48,7 @@ def main():
         elif args.all:
             ps.handle(args)
         elif args.connect:
-            windows_wg.handle(args)
+            connect.handle(args)
         elif args.disconnect:
             disconnect.handle(args)
         elif args.start:

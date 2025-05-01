@@ -79,6 +79,17 @@ def get_ipv4_address():
         print(f"Error: {e}")
         return None
 
+def open_powershell_with_ssh(username, wireguard_ip):
+    print(f"Opening PowerShell with SSH to {username}@{wireguard_ip}")
+    
+    wireguard_ip = wireguard_ip.split("/")[0]
+
+    # Use the full path to PowerShell executable
+    powershell_path = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+
+    # Open PowerShell in a new window with the SSH command
+    subprocess.Popen(["start", "powershell", "-NoExit", "-Command", f"ssh {username}@{wireguard_ip}"], shell=True)
+
 def handle(args):
     base_url = os.getenv("MGMT_SERVER")
     token = os.getenv("INDRA_SESSION")
@@ -115,6 +126,8 @@ def handle(args):
     allowed_ips = data.get('allowed_ips')
     status = data.get('status')
     msg = data.get('messsage')
+    username = data.get('username')
+    password = data.get('password')
 
     if not wireguard_ip or not vm_public_key:
         print("[-] Invalid backend response: Missing IP or public key")
@@ -129,3 +142,7 @@ def handle(args):
     )
 
     install_tunnel(CONFIG_PATH,CONFIG_NAME)
+
+    time.sleep(5)
+
+    open_powershell_with_ssh(username,wireguard_ip)

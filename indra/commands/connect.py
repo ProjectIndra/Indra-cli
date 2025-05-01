@@ -4,13 +4,15 @@ import requests
 import base64
 import nacl.public
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
 KEYS_DIR=r"C:\\Program Files\\WireGuard"
-LISTEN_PORT=51820
-WIREGUARD_EXE = r"C:\\Program Files\\WireGuard\\wireguard.exe"
-CONFIG_PATH = r"C:\\Users\\hetar\\Documents\\WireGuard\\new-client.conf"
+LISTEN_PORT=3000
+WIREGUARD_EXE = r"C:\Program Files\WireGuard\wireguard.exe"
+CONFIG_PATH = r"D:\Indra-cli\new-client.conf"
+CONFIG_NAME = "new-client"
 
 
 def generate_wireguard_keys():
@@ -32,25 +34,38 @@ def generate_wireguard_keys():
 def create_conf_file(private_key, address, peer_public_key, allowed_ips, config_path):
     config_content = f"""[Interface]
 PrivateKey = {private_key}
-ListenPort = 51820
 Address = {address}
+ListenPort = {LISTEN_PORT}
 
 [Peer]
 PublicKey = {peer_public_key}
 AllowedIPs = {allowed_ips}
-PersistentKeepalive = 25
+PersistentKeepalive = 5
 """
     with open(config_path, 'w') as f:
         f.write(config_content)
     print(f"Configuration file created at {config_path}")
 
-def install_tunnel(config_path):
-    subprocess.run([WIREGUARD_EXE, '/installtunnelservice', config_path], check=True)
-    print("Tunnel installed and started.")
-
 def uninstall_tunnel(config_name):
-    subprocess.run([WIREGUARD_EXE, '/uninstalltunnelservice', config_name], check=True)
-    print("Tunnel stopped and uninstalled.")
+    try:
+        subprocess.run([WIREGUARD_EXE, '/uninstalltunnelservice', config_name], check=True)
+        print(f"Tunnel '{config_name}' stopped and uninstalled.")
+    except subprocess.CalledProcessError:
+        print(f"No existing tunnel service '{config_name}' to uninstall.")
+
+def install_tunnel(config_path, config_name):
+    # Step 1: Uninstall if already installed
+    uninstall_tunnel(config_name)
+
+    # Step 2: Wait a moment to ensure service is removed
+    time.sleep(1)
+
+    # Step 3: Reinstall
+    try:
+        subprocess.run([WIREGUARD_EXE, '/installtunnelservice', config_path], check=True)
+        print(f"Tunnel '{config_name}' installed and started.")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to install tunnel: {e}")
 
 def get_public_ip():
     """Fetches the system's public IP address."""
@@ -93,8 +108,12 @@ def handle(args):
         return
 
     data = response.json()
-    wireguard_ip = data.get('wireguard_ip')
-    vm_public_key = data.get('wireguard_public_key')
+    print(data)
+    wireguard_ip = data.get('wiregaurd_ip')
+    vm_public_key = data.get('public_key')
+    allowed_ips = data.get('allowed_ips')
+    status = data.get('status')
+    msg = data.get('messsage')
 
     if not wireguard_ip or not vm_public_key:
         print("[-] Invalid backend response: Missing IP or public key")
@@ -102,10 +121,10 @@ def handle(args):
 
     create_conf_file(
         private_key=private_key,
-        address=wireguard_ip,
+        address="10.0.0.1/24",
         peer_public_key=vm_public_key,
-        allowed_ips="0.0.0.0/0",
-        config_path=CONFIG_PATH
+        allowed_ips=wireguard_ip,
+        config_path=CONFIG_PATH,
     )
 
-    install_tunnel(CONFIG_PATH)
+    install_tunnel(CONFIG_PATH,CONFIG_NAME)

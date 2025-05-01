@@ -5,14 +5,14 @@ import base64
 import nacl.public
 from dotenv import load_dotenv
 import time
+import socket
 
 load_dotenv()
 
-KEYS_DIR=r"C:\\Program Files\\WireGuard"
-LISTEN_PORT=3000
-WIREGUARD_EXE = r"C:\Program Files\WireGuard\wireguard.exe"
-CONFIG_PATH = r"D:\Indra-cli\new-client.conf"
-CONFIG_NAME = "new-client"
+LISTEN_PORT=os.getenv("LISTEN_PORT")
+WIREGUARD_EXE = os.getenv("WIREGUARD_EXE")
+CONFIG_PATH = os.getenv("CONFIG_PATH")
+CONFIG_NAME = os.getenv("CONFIG_NAME")
 
 
 def generate_wireguard_keys():
@@ -67,17 +67,16 @@ def install_tunnel(config_path, config_name):
     except subprocess.CalledProcessError as e:
         print(f"Failed to install tunnel: {e}")
 
-def get_public_ip():
-    """Fetches the system's public IP address."""
+def get_ipv4_address():
     try:
-        response = requests.get('https://api.ipify.org', timeout=5)
-        if response.status_code == 200:
-            return response.text.strip()
-        else:
-            print(f"[-] Failed to get public IP: Status code {response.status_code}")
-            return None
+        # This connects to an external host to find your primary local IPv4 address
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))  # Google's DNS, used only to determine route
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
     except Exception as e:
-        print(f"[-] Exception while getting public IP: {e}")
+        print(f"Error: {e}")
         return None
 
 def handle(args):
@@ -88,10 +87,12 @@ def handle(args):
     private_key, public_key = generate_wireguard_keys()
 
     # Fetch public IP automatically
-    public_ip = get_public_ip()
+    public_ip = get_ipv4_address()
     if not public_ip:
         print("[-] Could not determine public IP. Aborting.")
         return
+
+    # public_ip = "192.168.83.95"
 
     client_endpoint = f"{public_ip}:{LISTEN_PORT}"
 
@@ -121,7 +122,7 @@ def handle(args):
 
     create_conf_file(
         private_key=private_key,
-        address="10.0.0.1/24",
+        address="10.0.0.1/32",
         peer_public_key=vm_public_key,
         allowed_ips=wireguard_ip,
         config_path=CONFIG_PATH,

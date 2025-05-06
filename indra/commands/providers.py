@@ -9,8 +9,8 @@ load_dotenv()
 def print_provider_commands():
     commands = [
         ["indra providers -a/--all", "List all providers"],
-        ["indra providers -d/--details 1", "Show details of provider with ID 1"],
-        ["indra providers 1 -q/--query 4 8 100", "Query provider 1 with 4 vCPUs, 8GB RAM, 100GB storage"],
+        ["indra providers -d/--details <providerID>", "Show details of provider with ID 1"],
+        ["indra providers 1 -q/--query <vCPU> <RAM>(GB) <Storage>(GB)", "Query provider 1 with 4 vCPUs, 8GB RAM, 100GB storage"],
     ]
 
     print("\n🔹 Available Provider Commands:\n")
@@ -109,7 +109,7 @@ def handle(args):
             return
         response.raise_for_status()  # Handle HTTP errors (4xx, 5xx)
         data = response.json()
-        print(data)
+        # print(data)
         if not data:
             print("No providers found.")
             return

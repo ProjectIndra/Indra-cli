@@ -21,16 +21,15 @@ def handle(args):
             })
 
         data = response.json()
-        print(data)
 
         if response.status_code == 200:
             session_token = data.get("session_token")
             if session_token:
                 set_persistent_env_var("INDRA_SESSION", session_token)
-                print("\n Authentication successful. Session token saved.")
+                print("\nAuthentication successful. Session token saved.")
             else:
                 print(" No session token received from server.")
         else:
-            print(f" Authentication failed: {data.get('error', 'Unknown error')}")
+            print(f"Authentication failed: {data.get('error', 'Unknown error')}")
     except requests.RequestException as e:
-        print(f" Error connecting to server: {e}")
+        print(f" Error connecting to server")

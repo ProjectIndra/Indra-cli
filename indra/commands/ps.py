@@ -34,13 +34,13 @@ def handle(args):
                     vm.get("vm_id", "N/A"),
                     vm.get("vm_name", "N/A"),
                     vm.get("provider_name", "N/A"),
-                    vm.get("wireguard_ip", "N/A"),
+                    # vm.get("wireguard_ip", "N/A"),
                     " Connected" if vm.get("wireguard_status") else " Disconnected"
                 ]
                 for vm in active_vms
             ]
             # Define headers
-            headers = ["VM ID", "VM Name", "Provider", "WireGuard IP", "WireGuard Status"]
+            headers = ["VM ID", "VM Name", "Provider", "WireGuard Status"]
             # Print table
             print("\nAll VMs:")
             print(tabulate(table_data, headers=headers))
@@ -56,13 +56,13 @@ def handle(args):
                     vm.get("vm_name", "N/A"),
                     vm.get("provider_name", "N/A"),
                     vm.get("status", "N/A"),
-                    vm.get("wireguard_ip", "N/A"),
+                    # vm.get("wireguard_ip", "N/A"),
                     "Connected" if vm.get("wireguard_status") else "Disconnected"
                 ]
                 for vm in all_vms
             ]
             # Define headers
-            headers = ["VM ID", "VM Name", "Provider","Status", "WireGuard IP", "WireGuard Status"]
+            headers = ["VM ID", "VM Name", "Provider","Status", "WireGuard Status"]
             # Print table
             print("\nAll VMs:")
             print(tabulate(table_data, headers=headers))

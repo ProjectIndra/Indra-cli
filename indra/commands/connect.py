@@ -142,7 +142,7 @@ def handle(args):
     vm_peer_address = data.get('vm_peer_address')
 
 
-    if not  vm_public_key:
+    if not vm_public_key:
         print("[-] Invalid backend response: Missing public key")
         return
 

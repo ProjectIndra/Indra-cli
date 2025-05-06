@@ -18,7 +18,7 @@ def handle(args):
         response.raise_for_status()  # Raise error for HTTP 4xx/5xx responses
         
         print("MGMT Server is ONLINE!")
-        print(f"Response: {response.text}")  # Show heartbeat data (if available)
+        print(response.text)  # Show heartbeat data (if available)
 
     except requests.exceptions.ConnectionError:
         print("Error: MGMT Server is OFFLINE or unreachable.")

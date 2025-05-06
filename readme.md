@@ -2,7 +2,7 @@
 
 # change firewall settings to allow wireguard connection
 `
-New-NetFirewallRule -DisplayName "Allow WireGuard" -Direction Inbound -InterfaceAlias "<windows client interface>" -Action Allow
+New-NetFirewallRule -DisplayName "Allow WireGuard" -Direction Inbound -InterfaceAlias "new-client" -Action Allow
 `
 
 # allow wireguard connection to all interfaces

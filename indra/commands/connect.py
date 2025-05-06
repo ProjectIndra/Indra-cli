@@ -6,6 +6,8 @@ import nacl.public
 from dotenv import load_dotenv
 import time
 import socket
+import ctypes
+
 
 load_dotenv()
 
@@ -31,7 +33,7 @@ def generate_wireguard_keys():
 
     return private_key_b64, public_key_b64
 
-def create_conf_file(private_key, address, peer_public_key, allowed_ips, config_path):
+def create_conf_file(private_key, address, peer_public_key, allowed_ips,vm_peer_address, endpoint, config_path):
     config_content = f"""[Interface]
 PrivateKey = {private_key}
 Address = {address}
@@ -39,7 +41,8 @@ ListenPort = {LISTEN_PORT}
 
 [Peer]
 PublicKey = {peer_public_key}
-AllowedIPs = {allowed_ips}
+AllowedIPs = {allowed_ips},{vm_peer_address}
+Endpoint = {endpoint}
 PersistentKeepalive = 5
 """
     with open(config_path, 'w') as f:
@@ -90,12 +93,23 @@ def open_powershell_with_ssh(username, wireguard_ip):
     # Open PowerShell in a new window with the SSH command
     subprocess.Popen(["start", "powershell", "-NoExit", "-Command", f"ssh {username}@{wireguard_ip}"], shell=True)
 
+
+
+def is_admin():
+    """Check if script is running with admin rights."""
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+    
+
+
 def handle(args):
     base_url = os.getenv("MGMT_SERVER")
     token = os.getenv("INDRA_SESSION")
     url = base_url + "/cli/wg/connect"
 
-    private_key, public_key = generate_wireguard_keys()
+    # private_key, public_key = generate_wireguard_keys()
 
     # Fetch public IP automatically
     public_ip = get_ipv4_address()
@@ -103,43 +117,48 @@ def handle(args):
         print("[-] Could not determine public IP. Aborting.")
         return
 
-    # public_ip = "192.168.83.95"
-
-    client_endpoint = f"{public_ip}:{LISTEN_PORT}"
-
     payload = {
         "vm_name": args.connect,
-        "client_public_key": public_key,
-        "client_endpoint": client_endpoint
     }
 
-    response = requests.post(url, json=payload , headers={"Authorization": f"BearerCLI {token}"})
-
-    if response.status_code != 200:
-        print(f"[-] Error: {response.status_code} {response.text}")
+    try:
+        response = requests.post(url, json=payload , headers={"Authorization": f"BearerCLI {token}"})
+    except requests.exceptions.RequestException as e:
+        print(f"[-] Error connecting to server: {e}")
         return
 
     data = response.json()
-    print(data)
-    wireguard_ip = data.get('wiregaurd_ip')
-    vm_public_key = data.get('public_key')
-    allowed_ips = data.get('allowed_ips')
-    status = data.get('status')
-    msg = data.get('messsage')
-    username = data.get('username')
-    password = data.get('password')
+    if data.get("error"):
+        print("[-]", data["error"])
+        return
+    
+    wireguard_ip = data.get('vm_peer_address')
+    vm_public_key = data.get('interface_public_key')
+    allowed_ips = data.get('interface_allowed_ips')
+    username = data.get('username','avinash')
+    private_key = data.get('client_peer_private_key')
+    address = data.get('client_peer_address')
+    endpoint = data.get('interface_endpoint')
+    vm_peer_address = data.get('vm_peer_address')
 
-    if not wireguard_ip or not vm_public_key:
-        print("[-] Invalid backend response: Missing IP or public key")
+
+    if not  vm_public_key:
+        print("[-] Invalid backend response: Missing public key")
         return
 
     create_conf_file(
         private_key=private_key,
-        address="10.0.0.1/32",
+        address=address,
         peer_public_key=vm_public_key,
-        allowed_ips=wireguard_ip,
+        allowed_ips=allowed_ips,
+        vm_peer_address=vm_peer_address,
+        endpoint=endpoint,
         config_path=CONFIG_PATH,
     )
+
+    if not is_admin():
+        print("[-] This script requires admin privileges. Please run as administrator or open a new admin shell.")
+        return
 
     install_tunnel(CONFIG_PATH,CONFIG_NAME)
 

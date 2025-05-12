@@ -54,7 +54,7 @@ def handle(args):
 
     if response.status_code == 200:
         print("\n[+] VM created successfully!")
-        print(data.get("message"))
+        print(f"[+] {data.get("message")}")
     elif response.status_code == 500:
         print("\n[-] Invalid VM creation request. Try again.")
         print(data.get('error',"Failed to reach provider"))

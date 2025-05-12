@@ -45,6 +45,7 @@ AllowedIPs = {allowed_ips},{vm_peer_address}
 Endpoint = {endpoint}
 PersistentKeepalive = 5
 """
+    print(config_path)
     with open(config_path, 'w') as f:
         f.write(config_content)
     print(f"Configuration file created at {config_path}")
@@ -165,3 +166,16 @@ def handle(args):
     time.sleep(5)
 
     open_powershell_with_ssh(username,wireguard_ip)
+
+
+if __name__ == "__main__":
+    print(CONFIG_PATH)
+    # create_conf_file(
+    #     private_key="",
+    #     address="",
+    #     peer_public_key="",
+    #     allowed_ips="",
+    #     vm_peer_address="",
+    #     endpoint="",
+    #     config_path=CONFIG_PATH,
+    # )

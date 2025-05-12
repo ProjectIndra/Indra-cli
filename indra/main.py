@@ -3,20 +3,22 @@ from tabulate import tabulate
 import os
 
 # internal imports
-from indra.commands import connect, create, ps, rm, heartbeat, providers, start_stop, disconnect, auth
+from indra.commands import connect, create, ps, rm, heartbeat, providers, start_stop, disconnect, auth, wg_setup
 from indra.env import load_env, set_persistent_env_var
+from indra.custom_helper import CustomHelpFormatter
 
 def main():
+
     parser = argparse.ArgumentParser(prog="indra", description="Indra CLI to manage VMs")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Auth Command
-    auth_parser = subparsers.add_parser("auth", help="Authenticate with backend")
+    auth_parser = subparsers.add_parser("auth", help="Authenticate cli session.")
     auth_parser.add_argument("token", type=str, help="Authentication token")
     auth_parser.set_defaults(func=auth.handle)
 
     # 'vms' command
-    vms_parser = subparsers.add_parser("vms", help="Manage VMs", add_help=False)
+    vms_parser = subparsers.add_parser("vms", help="Manage VMs.", add_help=False)
     vms_parser.add_argument("-a", "--all", action="store_true", help="Show all VMs")
     vms_parser.add_argument("--create", type=str, help="Create a new VM with the given Provider ID")
     vms_parser.add_argument("--connect", type=str, help="Connect to VM WireGuard network")
@@ -63,11 +65,11 @@ def main():
     vms_parser.set_defaults(func=vms_handle)
 
     # Heartbeat Command
-    heartbeat_parser = subparsers.add_parser("heartbeat", help="Check if MGMT server is online")
+    heartbeat_parser = subparsers.add_parser("heartbeat", help="Check if server is online.")
     heartbeat_parser.set_defaults(func=heartbeat.handle)
 
     # Provider Command
-    provider_parser = subparsers.add_parser("providers", help="Manage providers")
+    provider_parser = subparsers.add_parser("providers", help="Manage providers.")
     provider_parser.add_argument(
         "-a", "--all",
         action="store_true",
@@ -102,9 +104,9 @@ def main():
 
     if os.getenv("INDRA_SESSION") is None and args.command != "auth":
         print("Welcome to Indra CLI!")
-        print("- No session found. Please login using 'indra auth <token>'")
-        print("- You can get this token from the Indra web app.")
-        print("- For more information, visit: https://indra.ai/docs/cli")
+        print("[-] No session found. Please login using 'indra auth <token>'")
+        print("[-] You can get this token from the Indra web app.")
+        print("[-] For more information, visit: https://indra.ai/docs/cli")
         exit(1)
 
     if hasattr(args, "func"):

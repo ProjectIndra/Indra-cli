@@ -12,7 +12,7 @@ def handle(args):
         return
 
     if not args.remove:
-        print("Error: VM Name is required.")
+        print("[-] Error: VM Name is required.")
         return
 
     # Determine API endpoint based on force flag
@@ -27,10 +27,10 @@ def handle(args):
         if response.status_code == 200:
             print(data.get("message"))
         elif response.status_code == 500:
-               print(f"{data.get('error',f'Error removing VM {args.remove}')}")
+               print(f"{data.get('error',f'[-] Error removing VM {args.remove}')}")
                return
         else:
             print(f"{data.get('error')}")
             return
     except requests.exceptions.RequestException as e:
-        print(f"Error removing VM {args.remove}: {e}")
+        print(f"[-] Error removing VM {args.remove}: {e}")

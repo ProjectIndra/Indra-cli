@@ -42,13 +42,13 @@ def handle(args):
             # Define headers
             headers = ["VM ID", "VM Name", "Provider", "WireGuard Status"]
             # Print table
-            print("\nAll VMs:")
+            print("\n[+] All Active VMs:")
             print(tabulate(table_data, headers=headers))
             print("\n")
         elif args.all:
             all_vms = data.get("all_vms",[])
             if not all_vms:
-                print("No VMs found.")
+                print("[+] No VMs found.")
                 return
             table_data = [
                 [
@@ -64,11 +64,11 @@ def handle(args):
             # Define headers
             headers = ["VM ID", "VM Name", "Provider","Status", "WireGuard Status"]
             # Print table
-            print("\nAll VMs:")
+            print("\n[+] All VMs:")
             print(tabulate(table_data, headers=headers))
             print("\n")
         else:
             print("Argument parsing has gone wrong.")
 
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching VMs: {e}")
+        print(f"[-] Error fetching VMs.")

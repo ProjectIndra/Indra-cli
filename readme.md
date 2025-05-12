@@ -19,3 +19,10 @@ WIREGUARD_EXE = C:\Program Files\WireGuard\wireguard.exe
 CONFIG_PATH = D:\Indra-cli\new-client.conf
 CONFIG_NAME = "new-client"
 `
+
+
+# Install 
+pip install git+https://github.com/ProjectIndra/Indra-cli.git 
+
+# Upgrade
+pip upgrade git+https://github.com/ProjectIndra/Indra-cli.git 

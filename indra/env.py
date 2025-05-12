@@ -36,4 +36,4 @@ def set_persistent_env_var(key, value, env_file=".env"):
     # now update the environment variable
     load_env(env_file)
 
-    print(f"✅ Successfully set {key} in {env_file}.")
+    print(f"[+] Successfully set {key} in {env_file}.")

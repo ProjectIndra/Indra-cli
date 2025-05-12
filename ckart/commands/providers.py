@@ -8,9 +8,9 @@ load_dotenv()
 # Function to show available provider commands
 def print_provider_commands():
     commands = [
-        ["indra providers -a/--all", "List all providers"],
-        ["indra providers -d/--details <providerID>", "Show details of provider with ID 1"],
-        ["indra providers 1 -q/--query <vCPU> <RAM>(GB) <Storage>(GB)", "Query provider 1 with 4 vCPUs, 8GB RAM, 100GB storage"],
+        ["ckart providers -a/--all", "List all providers"],
+        ["ckart providers -d/--details <providerID>", "Show details of provider with ID 1"],
+        ["ckart providers 1 -q/--query <vCPU> <RAM>(GB) <Storage>(GB)", "Query provider 1 with 4 vCPUs, 8GB RAM, 100GB storage"],
     ]
 
     print("\n🔹 Available Provider Commands:\n")
@@ -21,7 +21,7 @@ def print_all_providers(data):
     active_providers = data.get("all_providers", [])
     print(data)
     if not active_providers:
-        print("No active providers found.")
+        print("[-] No active providers found.")
         return
     
     table_data = [
@@ -41,17 +41,17 @@ def print_all_providers(data):
     ]
 
     headers = ["Provider ID", "Provider Name", "Max CPU", "Max RAM", "Max Storage","Max Networks","Rating","Type","UserId", "Status"]
-    print("\n🔹 List of All Providers:\n")
+    print("\n List of All Providers:\n")
     print(tabulate(table_data, headers=headers), "\n")
 
 # Function to print details of a specific provider (-d or --details)
 def print_provider_details(data):
     if not data:
-        print("Provider not found.")
+        print("[-] Provider not found.")
         return
     table_data = [[key, value] for key, value in data.items()]
     
-    print("\n🔹 Provider Details:\n")
+    print("\n[+] Provider Details:\n")
     print(tabulate(table_data, headers=["Attribute", "Value"]))
     print("\n")
 
@@ -59,10 +59,10 @@ def print_provider_details(data):
 def print_provider_query_results(data, provider_id):
     can_create = data.get("can_create", False)
     if not can_create:
-        print(f"Matching providers found cannot create vm for the given query for {provider_id}.")
-        print(f"error: {data}")
+        print(f"[-] Matching providers found cannot create vm for the given query for {provider_id}.")
+        print(f"[-] error: {data}")
     else:
-        print(f"Matching provider found for {provider_id}")
+        print(f"[+] Matching provider found for {provider_id}.")
 
 
 
@@ -85,12 +85,12 @@ def handle(args):
         endpoint = "/providers/lists"
         type="GET"
     else:
-        print("Error: Invalid command usage. Provide a valid flag or provider ID.")
+        print("[-] Error: Invalid command usage. Provide a valid flag or provider ID.")
         print_provider_commands()
         return
 
     url = f"{base_url}{endpoint}"
-    token = os.getenv("INDRA_SESSION")
+    token = os.getenv("CKART_SESSION")
     json_data={
         "provider_id": args.provider,
         "vcpus": args.query[0] if args.query else None,
@@ -98,7 +98,6 @@ def handle(args):
         "storage": args.query[2] * 1024 if args.query else None,
         "details": args.details
     }
-    # print(args.query[1])
 
     try:
         if(type == "POST"):
@@ -111,7 +110,7 @@ def handle(args):
         data = response.json()
         # print(data)
         if not data:
-            print("No providers found.")
+            print("[-] No providers found.")
             return
 
         # Call appropriate print function based on command
@@ -123,4 +122,4 @@ def handle(args):
             print_all_providers(data=data)
 
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching providers: {e}")
+        print(f"[-] Error fetching providers: {e}")

@@ -1,2 +1,2 @@
 [console_scripts]
-indra = indra.main:main
+ckart = ckart.main:main

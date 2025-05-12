@@ -1,9 +1,9 @@
 [project]
-name = "indra-cli"
+name = "ckart-cli"
 version = "0.1"
-description = "Indra CLI to manage VMs"
+description = "ckart CLI to manage VMs"
 authors = [
-    { name = "Project Indra", email = "hetarth.jain@gmail.com" }
+    { name = "Project ckart", email = "hetarth.jain@gmail.com" }
 ]
 readme = "README.md"
 license = { text = "MIT" }
@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.scripts]
-indra = "indra.main:main"
+ckart = "ckart.main:main"
 
 [build-system]
 requires = ["setuptools>=42", "wheel"]

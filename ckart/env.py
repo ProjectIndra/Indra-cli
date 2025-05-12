@@ -12,7 +12,7 @@ def set_persistent_env_var(key, value, env_file=".env"):
     Set or update an environment variable in a project-specific .env file.
     The change does not persist globally but can be sourced manually.
     """
-
+    print("hi")
     lines = []
     updated = False
 
@@ -27,7 +27,7 @@ def set_persistent_env_var(key, value, env_file=".env"):
                     lines.append(line)
 
     if not updated:  
-        lines.append(f'{key}="{value}"\n')  # Add new key if missing
+        lines.append(f'\n{key}="{value}"\n')  # Add new key if missing
 
     # Write back to .env file
     with open(env_file, "w") as f:

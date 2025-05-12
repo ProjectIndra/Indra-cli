@@ -3,13 +3,13 @@ from tabulate import tabulate
 import os
 
 # internal imports
-from indra.commands import connect, create, ps, rm, heartbeat, providers, start_stop, disconnect, auth, wg_setup
-from indra.env import load_env, set_persistent_env_var
-from indra.custom_helper import CustomHelpFormatter
+from ckart.commands import connect, create, ps, rm, heartbeat, providers, start_stop, disconnect, auth, wg_setup
+from ckart.env import load_env, set_persistent_env_var
+from ckart.custom_helper import CustomHelpFormatter
 
 def main():
 
-    parser = argparse.ArgumentParser(prog="indra", description="Indra CLI to manage VMs")
+    parser = argparse.ArgumentParser(prog="ckart", description="ckart CLI to manage VMs")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Auth Command
@@ -27,23 +27,23 @@ def main():
     vms_parser.add_argument("--stop", type=str, help="Stop a VM")
     vms_parser.add_argument("-rm","--remove", type=str, help="Remove a VM")
     vms_parser.add_argument("-f","--force", action="store_true", help="Force remove a VM")
-    vms_parser.add_argument("-h", "--help", action="store_true", help="Show help for 'indra vms'")
+    vms_parser.add_argument("-h", "--help", action="store_true", help="Show help for 'ckart vms'")
 
     def vms_handle(args):
         if args.help:
             commands =[
-                ["indra vms", "Show all active VMx"],
-                ["indra vms -a or indra vms --all", "List all VMs"],
-                ["indra vms --create <provider_name>", "Create a new VM"],
-                ["indra vms --connect <vm_name>", "Connect to WireGuard network"],
-                ["indra vms --disconnect <vm_name>", "Disconnect from WireGuard network"],
-                ["indra vms --start <vm_name>", "Start a VM"],
-                ["indra vms --stop <vm_name>", "Stop a VM"],
-                ["indra vms --remove <vm_name>", "Remove a VM"],
-                ["indra vms --remove -f or --force <vm_name>", "Force remove a VM"],
-                ["indra vms -h or indra vms --help", "Show help for 'indra vms'"],
+                ["ckart vms", "Show all active VMs"],
+                ["ckart vms -a or ckart vms --all", "List all VMs"],
+                ["ckart vms --create <provider_name>", "Create a new VM"],
+                ["ckart vms --connect <vm_name>", "Connect to WireGuard network"],
+                ["ckart vms --disconnect <vm_name>", "Disconnect from WireGuard network"],
+                ["ckart vms --start <vm_name>", "Start a VM"],
+                ["ckart vms --stop <vm_name>", "Stop a VM"],
+                ["ckart vms --remove <vm_name>", "Remove a VM"],
+                ["ckart vms --remove -f or --force <vm_name>", "Force remove a VM"],
+                ["ckart vms -h or ckart vms --help", "Show help for 'ckart vms'"],
             ]
-            print("\nAvailable commands for 'indra vms':\n")
+            print("\nAvailable commands for 'ckart vms':\n")
             print(tabulate(commands, headers=["Command", "Description"]),"\n")
         elif args.create:
             create.handle(args)
@@ -97,22 +97,41 @@ def main():
     provider_parser.set_defaults(func=providers.handle)
 
 
+        # Handle help manually to customize output
+    if len(os.sys.argv) == 1:
+        print("\nWelcome to ckart CLI.")
+        print('Use "ckart -h" to learn more about ckart commands.\n')
+        return
+
+    if "-h" in os.sys.argv or "--help" in os.sys.argv:
+        commands = [ 
+            ["ckart heartbeat", "Check if server is online"], 
+            ["ckart auth <token>", "Authenticate CLI session."], 
+            ["ckart vms -h", "List all sub-commands to manage VMs"], 
+            ["ckart providers", "List all sub-commands to manage Providers"], 
+            ["ckart -h", "Help - list all commands for ckart CLI."], 
+        ]
+        print("\nAvailable commands for ckart CLI:\n")
+        print(tabulate(commands, headers=["Command", "Description"]),"\n")
+        return
+
     # Parse the arguments
     args = parser.parse_args()
 
     load_env()
 
-    if os.getenv("INDRA_SESSION") is None and args.command != "auth":
-        print("Welcome to Indra CLI!")
-        print("[-] No session found. Please login using 'indra auth <token>'")
-        print("[-] You can get this token from the Indra web app.")
-        print("[-] For more information, visit: https://indra.ai/docs/cli")
+    if os.getenv("CKART_SESSION") is None and args.command != "auth":
+        print("Welcome to ckart CLI!")
+        print("[-] No session found. Please login using 'ckart auth <token>'")
+        print("[-] You can get this token from the ckart web app.")
+        print("[-] For more information, visit: https://computekart.com/docs")
         exit(1)
 
     if hasattr(args, "func"):
         args.func(args)
     else:
         parser.print_help()
+
 
 if __name__ == "__main__":
     main()

@@ -88,7 +88,7 @@ def open_powershell_with_ssh(username, wireguard_ip):
     wireguard_ip = wireguard_ip.split("/")[0]
 
     # Use the full path to PowerShell executable
-    powershell_path = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+    powershell_path = r"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
 
     # Open PowerShell in a new window with the SSH command
     subprocess.Popen(["start", "powershell", "-NoExit", "-Command", f"ssh {username}@{wireguard_ip}"], shell=True)
@@ -106,7 +106,7 @@ def is_admin():
 
 def handle(args):
     base_url = os.getenv("MGMT_SERVER")
-    token = os.getenv("INDRA_SESSION")
+    token = os.getenv("CKART_SESSION")
     url = base_url + "/cli/wg/connect"
 
     # private_key, public_key = generate_wireguard_keys()
@@ -159,7 +159,7 @@ def handle(args):
     if not is_admin():
         print("[-] This script requires admin privileges. Please run as administrator or open a new admin shell.")
         return
-
+    print("[+] Running WireGuard tunnel service...")
     install_tunnel(CONFIG_PATH,CONFIG_NAME)
 
     time.sleep(5)

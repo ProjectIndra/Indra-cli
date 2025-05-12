@@ -1,8 +1,8 @@
 Metadata-Version: 2.4
-Name: indra-cli
+Name: ckart-cli
 Version: 0.1
-Summary: Indra CLI to manage VMs
-Author-email: Project Indra <hetarth.jain@gmail.com>
+Summary: ckart CLI to manage VMs
+Author-email: Project ckart <hetarth.jain@gmail.com>
 License: MIT
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown
@@ -30,6 +30,6 @@ The env must have the following variables set:
 `
 LISTEN_PORT=51820
 WIREGUARD_EXE = C:\Program Files\WireGuard\wireguard.exe
-CONFIG_PATH = D:\Indra-cli\new-client.conf
+CONFIG_PATH = D:\ckart-cli\new-client.conf
 CONFIG_NAME = "new-client"
 `

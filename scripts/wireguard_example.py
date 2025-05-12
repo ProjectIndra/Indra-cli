@@ -1,11 +1,11 @@
 import subprocess
 
 # Path to wireguard.exe - adjust if needed
-WIREGUARD_EXE = r"C:\Program Files\WireGuard\wireguard.exe"
+WIREGUARD_EXE = r"C:\\Program Files\\WireGuard\\wireguard.exe"
 
 # Path to your WireGuard config file
 # CONFIG_PATH = r"C:\Users\DELL\Downloads\wg-client.conf"
-CONFIG_PATH = r"D:\Indra-cli\new-client.conf"
+CONFIG_PATH = r"C:\\ckart-cli\\new-client.conf"
 
 def install_tunnel(config_path):
     subprocess.run([WIREGUARD_EXE, '/installtunnelservice', config_path], check=True)

@@ -16,7 +16,7 @@ def handle(args):
     base_url = os.getenv("MGMT_SERVER")
 
     provider_id = args.create  # Comes from CLI argument
-    token = os.getenv("INDRA_SESSION")
+    token = os.getenv("CKART_SESSION")
 
     # Step 2: Ask for vCPU, RAM, and Storage and verify
     vcpus = get_input("Enter required vCPUs", int)
@@ -53,13 +53,13 @@ def handle(args):
     # print(data)
 
     if response.status_code == 200:
-            print("\n---------------------VM created successfully!----------------------")
-            print(data.get("message"))
+        print("\n[+] VM created successfully!")
+        print(data.get("message"))
     elif response.status_code == 500:
-        print("\n--------------------Invalid VM creation request. Try again.----------------------")
+        print("\n[-] Invalid VM creation request. Try again.")
         print(data.get('error',"Failed to reach provider"))
         return
     else:
-        print(f"{data.get('error')}")
+        print(f"[-] {data.get('error')}")
         return
 

@@ -3,7 +3,7 @@ import os
 import platform
 import subprocess
 
-from indra.env import set_persistent_env_var
+from ckart.env import set_persistent_env_var
 
 BASE_URL = os.getenv("MGMT_SERVER")
 
@@ -25,11 +25,12 @@ def handle(args):
         if response.status_code == 200:
             session_token = data.get("session_token")
             if session_token:
-                set_persistent_env_var("INDRA_SESSION", session_token)
+                set_persistent_env_var("CKART_SESSION", session_token)
                 print("\n[+] Authentication successful. Session token saved.")
             else:
                 print("[-] No session token received from server.")
         else:
             print(f"[-] Authentication failed: {data.get('error', 'Unknown error')}")
+            return
     except requests.RequestException as e:
-        print(f"[-] Error connecting to server")
+        print(f"[-] Error connecting to server: {e}")

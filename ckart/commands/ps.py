@@ -14,7 +14,7 @@ def handle(args):
 
     endpoint = "/vms/allVms" if args.all else "/vms/allActiveVms"
     url = f"{base_url}{endpoint}"
-    token = os.getenv("INDRA_SESSION")
+    token = os.getenv("CKART_SESSION")
 
     try:
         response = requests.get(url, headers={"Authorization": f"BearerCLI {token}"})
@@ -27,7 +27,7 @@ def handle(args):
         if(not args.all):
             active_vms = data.get("active_vms",[])
             if not active_vms:
-                print("No active VMs found.")
+                print("[-] No active VMs found.")
                 return
             table_data = [
                 [
@@ -68,7 +68,7 @@ def handle(args):
             print(tabulate(table_data, headers=headers))
             print("\n")
         else:
-            print("Argument parsing has gone wrong.")
+            print("[-] Argument parsing has gone wrong.")
 
     except requests.exceptions.RequestException as e:
         print(f"[-] Error fetching VMs.")

@@ -15,25 +15,25 @@ def handle(args):
         command = "stopCLI"
         vm_name = args.stop
     else:
-        print("Incorrect Command")
+        print("[-] Incorrect Command")
         return 
     # print(vm_id, command)
     
     endpoint = f"/vms/{command}"
     url = f"{base_url}{endpoint}?vm_name={vm_name}"
-    token= os.getenv("INDRA_SESSION")
+    token= os.getenv("CKART_SESSION")
 
     try:
         response = requests.get(url,headers={"Authorization": f"BearerCLI {token}"})
         data= response.json()
         
         if response.status_code == 200:
-            print(data.get("message"))
+            print(f"[+] {data.get("message")}")
         elif response.status_code == 500:
-               print(f"{data.get('error',f'Error removing VM {vm_name}')}")
+               print(f"[-] {data.get('error',f'Error removing VM {vm_name}')}")
                return
         else:
-            print(f"{data.get('error')}")
+            print(f"[-] {data.get('error')}")
             return
     except requests.exceptions.RequestException as e:
-        print(f"Error {command}ing VM {vm_name}: {e}")
+        print(f"[-] Error {command}ing VM {vm_name}: {e}")

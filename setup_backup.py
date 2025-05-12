@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="indra-cli",
+    name="ckart-cli",
     version="0.1",
     packages=find_packages(),
     install_requires=[
@@ -14,11 +14,11 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "indra=indra.main:main"
+            "ckart=ckart.main:main"
         ]
     },
-	author="Project Indra",
-    description="Indra CLI tool to manage VMs",
+	author="Project ckart",
+    description="ckart CLI tool to manage VMs",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     classifiers=[

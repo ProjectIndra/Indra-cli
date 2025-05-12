@@ -1,4 +1,4 @@
-# Install-Indra.ps1
+# Install-ckart.ps1
 $ErrorActionPreference = "Stop"
 
 function Test-Admin {
@@ -17,9 +17,9 @@ function Test-Python {
     }
 }
 
-function Install-IndraCLI {
-    $repoUrl = "git+https://github.com/your-username/indra-cli.git"
-    Write-Host "[*] Installing Indra CLI from GitHub..."
+function Install-ckartCLI {
+    $repoUrl = "git+https://github.com/ProjectIndra/Indra-cli.git"
+    Write-Host "[*] Installing ckart CLI from GitHub..."
     python -m pip install --upgrade pip
     python -m pip install $repoUrl
 }
@@ -55,6 +55,6 @@ function Install-WireGuard {
 Test-Admin
 Test-Python
 Install-WireGuard
-Install-IndraCLI
+Install-ckartCLI
 
-Write-Host "[>] Setup complete. You can now run: indra"
+Write-Host "[>] Setup complete. You can now run: ckart"

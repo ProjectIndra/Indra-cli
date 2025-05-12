@@ -10,16 +10,17 @@
 
 # env
 
-The env must have the following variables set:
-`LISTEN_PORT=51820
-WIREGUARD_EXE = C:\Program Files\WireGuard\wireguard.exe
-CONFIG_PATH = D:\ckart-cli\new-client.conf
-CONFIG_NAME = "new-client"`
+The env must have the following variables set:\
+`LISTEN_PORT=51820`\
+`WIREGUARD_EXE = C:\Program`\
+`Files\WireGuard\wireguard.exe`\
+`CONFIG_PATH = C:\ckart-cli\new-client.conf`\
+`CONFIG_NAME = "new-client"`
 
 # Install
 
-pip install git+https://github.com/Projectckart/ckart-cli.git
+pip install git+https://github.com/ProjectIndra/Indra-cli.git
 
 # Upgrade
 
-pip upgrade git+https://github.com/Projectckart/ckart-cli.git
+pip upgrade git+https://github.com/ProjectIndra/Indra-cli.git

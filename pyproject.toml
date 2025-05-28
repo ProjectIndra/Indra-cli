@@ -6,7 +6,7 @@ authors = [
     { name = "Project ckart", email = "hetarth.jain@gmail.com" }
 ]
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 requires-python = ">=3.7"
 dependencies = [
     "requests",

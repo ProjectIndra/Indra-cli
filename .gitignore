@@ -8,3 +8,4 @@ ckart-CLI - Made with Clipchamp.mp4
 ckart_cli.egg-info
 dist
 demo-client.conf
+.env1

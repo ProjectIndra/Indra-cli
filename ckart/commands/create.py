@@ -2,7 +2,7 @@ import os
 import requests
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
 
 def get_input(prompt, type_func=str):
     """Helper function to get user input safely."""

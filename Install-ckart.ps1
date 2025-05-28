@@ -50,11 +50,35 @@ function Install-WireGuard {
     Remove-Item $tempInstaller -Force -ErrorAction SilentlyContinue
 }
 
+function Write-EnvFile {
+    $envDir = "$HOME\.ckart-cli"
+    $envFile = Join-Path $envDir ".env"
+
+    if (-not (Test-Path $envDir)) {
+        New-Item -ItemType Directory -Path $envDir | Out-Null
+    }
+
+    $configPath = Join-Path $HOME "Documents\WireGuard\demo-client.conf"
+
+    $content = @"
+MGMT_SERVER="https://backend.computekart.com"
+LISTEN_PORT=51820
+WIREGUARD_EXE="C:\Program Files\WireGuard\wireguard.exe"
+CONFIG_PATH="$configPath"
+CONFIG_NAME="demo-client"
+"@
+
+    $content | Set-Content -Path $envFile -Encoding UTF8
+    Write-Host "[+] Environment variables written to $envFile"
+}
+
 # ---------------- MAIN ----------------
 
 Test-Admin
 Test-Python
 Install-WireGuard
 Install-ckartCLI
+Write-EnvFile
+
 
 Write-Host "[>] Setup complete. You can now run: ckart"

@@ -9,7 +9,7 @@ import socket
 import ctypes
 
 
-load_dotenv()
+load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
 
 LISTEN_PORT=os.getenv("LISTEN_PORT")
 WIREGUARD_EXE = os.getenv("WIREGUARD_EXE")
@@ -33,6 +33,7 @@ def generate_wireguard_keys():
 
     return private_key_b64, public_key_b64
 
+
 def create_conf_file(private_key, address, peer_public_key, allowed_ips,vm_peer_address, endpoint, config_path):
     config_content = f"""[Interface]
 PrivateKey = {private_key}
@@ -50,12 +51,14 @@ PersistentKeepalive = 5
         f.write(config_content)
     print(f"Configuration file created at {config_path}")
 
+
 def uninstall_tunnel(config_name):
     try:
         subprocess.run([WIREGUARD_EXE, '/uninstalltunnelservice', config_name], check=True)
         print(f"Tunnel '{config_name}' stopped and uninstalled.")
     except subprocess.CalledProcessError:
         print(f"No existing tunnel service '{config_name}' to uninstall.")
+
 
 def install_tunnel(config_path, config_name):
     # Step 1: Uninstall if already installed
@@ -71,17 +74,6 @@ def install_tunnel(config_path, config_name):
     except subprocess.CalledProcessError as e:
         print(f"Failed to install tunnel: {e}")
 
-def get_ipv4_address():
-    try:
-        # This connects to an external host to find your primary local IPv4 address
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))  # Google's DNS, used only to determine route
-        ip = s.getsockname()[0]
-        s.close()
-        return ip
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
 
 def open_powershell_with_ssh(username, wireguard_ip):
     print(f"Opening PowerShell with SSH to {username}@{wireguard_ip}")
@@ -112,11 +104,6 @@ def handle(args):
 
     # private_key, public_key = generate_wireguard_keys()
 
-    # Fetch public IP automatically
-    public_ip = get_ipv4_address()
-    if not public_ip:
-        print("[-] Could not determine public IP. Aborting.")
-        return
 
     payload = {
         "vm_name": args.connect,
@@ -167,15 +154,3 @@ def handle(args):
 
     open_powershell_with_ssh(username,wireguard_ip)
 
-
-if __name__ == "__main__":
-    print(CONFIG_PATH)
-    # create_conf_file(
-    #     private_key="",
-    #     address="",
-    #     peer_public_key="",
-    #     allowed_ips="",
-    #     vm_peer_address="",
-    #     endpoint="",
-    #     config_path=CONFIG_PATH,
-    # )

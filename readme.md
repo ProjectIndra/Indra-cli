@@ -19,7 +19,8 @@ The env must have the following variables set:\
 
 # Install
 
-pip install git+https://github.com/ProjectIndra/Indra-cli.git
+### Run in powershell
+Install-ckart.ps1
 
 # Upgrade
 

@@ -1,14 +1,14 @@
 import requests
 import os
-import platform
-import subprocess
-
 from ckart.env import set_persistent_env_var
+from dotenv import load_dotenv
 
+load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
 BASE_URL = os.getenv("MGMT_SERVER")
 
 def handle(args):
     token = args.token
+    print(f"URL: {BASE_URL}")
     url = f"{BASE_URL}/cli/profile/verifyCliToken"
 
     print(f"Authenticating with token: {token}")
@@ -26,6 +26,16 @@ def handle(args):
             session_token = data.get("session_token")
             if session_token:
                 set_persistent_env_var("CKART_SESSION", session_token)
+                config_path = r"C:\\Users\\%USERNAME%\\Documents\\WireGuard\\demo-client.conf"
+                config_path = os.path.expandvars(config_path)
+
+                set_persistent_env_var("MGMT_SERVER", "https://backend.computekart.com")
+                set_persistent_env_var("LISTEN_PORT", 51820)
+                set_persistent_env_var("WIREGUARD_EXE", r"C:\\Program Files\\WireGuard\\wireguard.exe")
+                set_persistent_env_var("CONFIG_PATH", config_path)
+                set_persistent_env_var("CONFIG_NAME", "demo-client")
+
+                print("[+] Environment variables written to .env")
                 print("\n[+] Authentication successful. Session token saved.")
             else:
                 print("[-] No session token received from server.")
@@ -33,4 +43,4 @@ def handle(args):
             print(f"[-] Authentication failed: {data.get('error', 'Unknown error')}")
             return
     except requests.RequestException as e:
-        print(f"[-] Error connecting to server: {e}")
+        print(f"[-] Error connecting to server.{e}")

@@ -1,11 +1,11 @@
 import argparse
 from tabulate import tabulate
 import os
+from dotenv import load_dotenv
+from ckart.commands import connect, create, ps, rm, heartbeat, providers, start_stop, disconnect, auth
 
-# internal imports
-from ckart.commands import connect, create, ps, rm, heartbeat, providers, start_stop, disconnect, auth, wg_setup
-from ckart.env import load_env, set_persistent_env_var
-from ckart.custom_helper import CustomHelpFormatter
+load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
+
 
 def main():
 
@@ -117,8 +117,6 @@ def main():
 
     # Parse the arguments
     args = parser.parse_args()
-
-    load_env()
 
     if os.getenv("CKART_SESSION") is None and args.command != "auth":
         print("Welcome to ckart CLI!")

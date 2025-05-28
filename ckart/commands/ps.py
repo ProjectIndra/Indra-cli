@@ -3,7 +3,8 @@ import requests
 from dotenv import load_dotenv
 from tabulate import tabulate
 
-load_dotenv()
+load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
+
 
 def handle(args):
     base_url = os.getenv("MGMT_SERVER")

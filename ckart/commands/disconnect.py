@@ -2,7 +2,7 @@ import requests
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
 
 BASE_URL = os.getenv("MGMT_SERVER")
 

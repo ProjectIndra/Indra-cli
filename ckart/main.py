@@ -2,9 +2,16 @@ import argparse
 from tabulate import tabulate
 import os
 from dotenv import load_dotenv
+from ckart.env import load_env
 from ckart.commands import connect, create, ps, rm, heartbeat, providers, start_stop, disconnect, auth
 
-load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
+# load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
+# load_env(".env")
+# env_path = os.path.expanduser("$HOME\.ckart-cli\.env")
+env_path = os.path.join(os.path.expanduser(path="~"), ".ckart-cli", ".env")
+# print(f"Loading environment variables from: {env_path}")
+load_env(env_path)
+# print(os.getenv("MGMT_SERVER"))
 
 
 def main():

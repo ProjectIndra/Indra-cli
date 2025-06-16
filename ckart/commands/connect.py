@@ -9,7 +9,7 @@ import socket
 import ctypes
 
 
-load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
+# load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
 
 LISTEN_PORT=os.getenv("LISTEN_PORT")
 WIREGUARD_EXE = os.getenv("WIREGUARD_EXE")

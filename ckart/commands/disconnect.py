@@ -15,7 +15,7 @@ def handle(args):
         data=response.json()
         
         if response.status_code == 200:
-            print(f"[-] {data.get("message")}")
+            print(f"[-] {data.get('message')}")
         elif response.status_code == 500:
                print(f"[-] {data.get('error',f'Error Disconnecting VM {args.disconnect}')}")
                return

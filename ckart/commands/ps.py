@@ -72,4 +72,4 @@ def handle(args):
             print("[-] Argument parsing has gone wrong.")
 
     except requests.exceptions.RequestException as e:
-        print(f"[-] Error fetching VMs.")
+        print("[-] Error fetching VMs.")

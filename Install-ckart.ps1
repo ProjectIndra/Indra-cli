@@ -21,7 +21,7 @@ function Install-ckartCLI {
     $repoUrl = "git+https://github.com/ProjectIndra/Indra-cli.git"
     Write-Host "[*] Installing ckart CLI from GitHub..."
     python -m pip install --upgrade pip
-    python -m pip install $repoUrl
+    python -m pip install --upgrade --force-reinstall $repoUrl
 }
 
 function Install-WireGuard {

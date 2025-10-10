@@ -2,7 +2,7 @@ import requests
 import os
 from ckart.env import set_persistent_env_var
 from dotenv import load_dotenv
-
+import traceback
 # load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
 
 
@@ -20,12 +20,16 @@ def handle(args):
     print(f"Authenticating with token: {token}")
     
     try:
-        response = requests.post(url, json={
-            "cli_verification_token": token,
-            "wireguard_endpoint":os.getenv("WG_ENDPOINT","10.24.37.4:3000"),
-            "wireguard_public_key":os.getenv("WG_PUBLIC_KEY","fainfiaa0f=4949"),
-            })
-
+        response = requests.post(
+            url,
+            headers={"ngrok-skip-browser-warning": "true"},
+            json={
+                "cli_verification_token": token,
+                "wireguard_endpoint": os.getenv("WG_ENDPOINT", "10.24.37.4:3000"),
+                "wireguard_public_key": os.getenv("WG_PUBLIC_KEY", "fainfiaa0f=4949"),
+            },
+        )
+        print("response" ,response.text)
         data = response.json()
 
         if response.status_code == 200:
@@ -50,4 +54,5 @@ def handle(args):
             print(f"[-] Authentication failed: {data.get('error', 'Unknown error')}")
             return
     except requests.RequestException as e:
-        print(f"[-] Error connecting to server.{e}")
+        traceback(e)
+        print(f"[-] Error connecting to server. {e}")

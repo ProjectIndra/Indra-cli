@@ -41,14 +41,15 @@ def handle(args):
     payload = {
         "vm_name": vm_name,
         "provider_id": provider_id,
-        "vcpus": vcpus,
-        "ram": ram*1024,
-        "storage": storage*1024,
-        "vm_image_type": vm_image,
-        "remarks": remarks
+        "vcpus": str(int(vcpus)),
+        "ram": str(int(ram) * 1024),
+        "storage": str(int(storage) * 1024),
+        "vm_image": vm_image,
+        "remarks": remarks,
     }
 
     response = requests.post(create_vm_url, json=payload, headers={"Authorization": f"BearerCLI {token}"})
+    print("Response:", response.text)  # Debugging line
     data=response.json()
     # print(data)
 

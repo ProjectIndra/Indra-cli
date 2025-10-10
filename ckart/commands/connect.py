@@ -3,9 +3,7 @@ import subprocess
 import requests
 import base64
 import nacl.public
-from dotenv import load_dotenv
 import time
-import socket
 import ctypes
 
 

@@ -27,21 +27,31 @@ def print_all_providers(data):
     
     table_data = [
         [
-            provider.get("provider_id", "N/A"),
-            provider.get("provider_name", "N/A"),
-            provider.get("provider_allowed_vcpu", "N/A"),
-            provider.get("provider_allowed_ram", "N/A"),
-            provider.get("provider_allowed_storage", "N/A"),
-            provider.get("provider_allowed_networks", "N/A"),
-            provider.get("provider_rating", "N/A"),
-            provider.get("provider_type", "N/A"),
-            provider.get("user_id", "N/A"),
-            provider.get("provider_status", "N/A"),
+            provider.get("providerId", "N/A"),
+            provider.get("providerName", "N/A"),
+            provider.get("providerAllowedVcpu", "N/A"),
+            provider.get("providerAllowedRam", "N/A"),
+            provider.get("providerAllowedStorage", "N/A"),
+            provider.get("providerAllowedNetworks", "N/A"),
+            # provider.get("provider_rating", "N/A"),
+            # provider.get("provider_type", "N/A"),
+            # provider.get("user_id", "N/A"),
+            provider.get("providerStatus", "N/A"),
         ]
         for provider in active_providers
     ]
 
-    headers = ["Provider ID", "Provider Name", "Max CPU", "Max RAM", "Max Storage","Max Networks","Rating","Type","UserId", "Status"]
+    headers = [
+        "Provider ID", 
+        "Provider Name", 
+        "Max CPU", 
+        "Max RAM", 
+        "Max Storage",
+        "Max Networks",
+        # "Rating",
+        # "Type",
+        # "UserId", 
+        "Status"]
     print("\n List of All Providers:\n")
     print(tabulate(table_data, headers=headers), "\n")
 
@@ -77,11 +87,11 @@ def handle(args):
         return
     if args.provider is not None and args.query:
         vcpus, ram, storage = args.query
-        endpoint = f"/providers/query"
+        endpoint = "/providers/query"
         type="POST"
-    elif args.details is not None:
-        endpoint = f"/providers/details?provider_id={args.details}"
-        type="GET"
+    # elif args.details is not None:
+    #     endpoint = f"/providers/details?provider_id={args.details}"
+    #     type="POST"
     elif args.all:
         endpoint = "/providers/lists"
         type="GET"
@@ -117,8 +127,8 @@ def handle(args):
         # Call appropriate print function based on command
         if args.provider is not None and args.query:
             print_provider_query_results(data=data, provider_id=args.provider)
-        elif args.details is not None:
-            print_provider_details(data=data)
+        # elif args.details is not None:
+        #     print_provider_details(data=data)
         elif args.all:
             print_all_providers(data=data)
 

@@ -21,6 +21,7 @@ from ckart.env import load_env
 # load_env(".env")
 # env_path = os.path.expanduser("$HOME\.ckart-cli\.env")
 env_path = os.path.join(os.path.expanduser(path="~"), ".ckart-cli", ".env")
+print(env_path)
 # print(f"Loading environment variables from: {env_path}")
 load_env(env_path)
 # print(os.getenv("MGMT_SERVER"))
@@ -64,7 +65,7 @@ def main():
             commands = [
                 ["ckart vms", "Show all active VMs"],
                 ["ckart vms -a or ckart vms --all", "List all VMs"],
-                ["ckart vms --create <provider_name>", "Create a new VM"],
+                ["ckart vms --create <provider_id>", "Create a new VM"],
                 ["ckart vms --connect <vm_id>", "Connect to WireGuard network"],
                 [
                     "ckart vms --disconnect <vm_id>",

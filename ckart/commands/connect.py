@@ -104,7 +104,7 @@ def handle(args):
 
 
     payload = {
-        "vm_name": args.connect,
+        "vm_id": args.connect,
     }
 
     try:
@@ -112,7 +112,7 @@ def handle(args):
     except requests.exceptions.RequestException as e:
         print(f"[-] Error connecting to server: {e}")
         return
-
+    print(response.text)  # Debugging line
     data = response.json()
     if data.get("error"):
         print("[-]", data["error"])
@@ -126,7 +126,6 @@ def handle(args):
     address = data.get('client_peer_address')
     endpoint = data.get('interface_endpoint')
     vm_peer_address = data.get('vm_peer_address')
-
 
     if not vm_public_key:
         print("[-] Invalid backend response: Missing public key")

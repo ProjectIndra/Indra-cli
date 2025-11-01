@@ -5,9 +5,10 @@ import base64
 import nacl.public
 import time
 import ctypes
+from ckart.env import load_env
 
 
-# load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
+load_env(os.path.expanduser("~/.ckart-cli/.env"))
 
 LISTEN_PORT=os.getenv("LISTEN_PORT")
 WIREGUARD_EXE = os.getenv("WIREGUARD_EXE")
@@ -45,6 +46,10 @@ Endpoint = {endpoint}
 PersistentKeepalive = 5
 """
     print(config_path)
+
+    ## create the path if it does not exist
+    os.makedirs(os.path.dirname(config_path), exist_ok=True)
+    
     with open(config_path, 'w') as f:
         f.write(config_content)
     print(f"Configuration file created at {config_path}")

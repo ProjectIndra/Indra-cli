@@ -126,7 +126,7 @@ def handle(args):
     wireguard_ip = data.get('vm_peer_address')
     vm_public_key = data.get('interface_public_key')
     allowed_ips = data.get('interface_allowed_ips')
-    username = data.get('username','avinash')
+    username = data.get('username','mega')
     private_key = data.get('client_peer_private_key')
     address = data.get('client_peer_address')
     endpoint = data.get('interface_endpoint')

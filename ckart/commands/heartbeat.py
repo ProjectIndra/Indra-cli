@@ -1,4 +1,5 @@
 import os
+
 import requests
 from dotenv import load_dotenv
 
@@ -15,17 +16,16 @@ def handle(args):
     url = f"{base_url}/"  # Adjust if your API uses a different endpoint
 
     try:
-        response = requests.get(url, timeout=5)  # Set a short timeout
-        response.raise_for_status()  # Raise error for HTTP 4xx/5xx responses
-        
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
         print("[+] MGMT Server is ONLINE!")
-        print(response.text)  # Show heartbeat data (if available)
-
+        if response.text.strip():
+            print("[Server Response]:", response.text.strip())
     except requests.exceptions.ConnectionError:
-        print("[-] Error: MGMT Server is OFFLINE or unreachable.")
-
+        print(
+            "[-] MGMT Server is OFFLINE or unreachable. Please check your network connection or server address."
+        )
     except requests.exceptions.Timeout:
-        print("[-] Error: MGMT Server did not respond in time.")
-
+        print("[-] MGMT Server did not respond in time. Please try again later.")
     except requests.exceptions.RequestException as e:
-        print(f"[-] Error: {e}")
+        print(f"[-] Failed to check server status: {e}")

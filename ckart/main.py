@@ -1,7 +1,6 @@
 import argparse
 import os
 
-from dotenv import load_dotenv
 from tabulate import tabulate
 
 from ckart.commands import (
@@ -14,6 +13,7 @@ from ckart.commands import (
     ps,
     rm,
     start_stop,
+    tunnel,
 )
 from ckart.env import load_env
 
@@ -21,8 +21,7 @@ from ckart.env import load_env
 # load_env(".env")
 # env_path = os.path.expanduser("$HOME\.ckart-cli\.env")
 env_path = os.path.join(os.path.expanduser(path="~"), ".ckart-cli", ".env")
-print(env_path)
-# print(f"Loading environment variables from: {env_path}")
+print(f"Loading environment variables from: {env_path}")
 load_env(env_path)
 # print(os.getenv("MGMT_SERVER"))
 
@@ -132,6 +131,48 @@ def main():
     )
     provider_parser.set_defaults(func=providers.handle)
 
+    # Tunnel command
+    tunnel_parser = subparsers.add_parser("tunnel", help="Manage Tunnel feature")
+    tunnel_parser.add_argument(
+        "--list",
+        action="store_true",
+        help="List all tunnel clients",
+    )
+    tunnel_parser.add_argument(
+        "--add",
+        metavar="token",
+        type=str,
+        help="Register/add tunnel using the provided token",
+    )
+    tunnel_parser.add_argument(
+        "--connect",
+        action="store_true",
+        help="Expose local host and port to public URL",
+    )
+    tunnel_parser.add_argument(
+        "--download",
+        action="store_true",
+        help="Download tunnel client jar",
+    )
+    tunnel_parser.add_argument(
+        "--config",
+        metavar="token",
+        type=str,
+        help="Set tunnel token in .env file",
+    )
+    tunnel_parser.add_argument(
+        "--create",
+        action="store_true",
+        help="Create a new tunnel client and auto-config it",
+    )
+    tunnel_parser.add_argument(
+        "--delete",
+        metavar="tunnel_id",
+        type=str,
+        help="Delete a tunnel",
+    )
+    tunnel_parser.set_defaults(func=tunnel.handle)
+
     # Handle help manually to customize output only for top-level help
     if len(os.sys.argv) == 1:
         print("\nWelcome to ckart CLI.")
@@ -145,6 +186,12 @@ def main():
             ["ckart auth <token>", "Authenticate CLI session."],
             ["ckart vms -h", "List all sub-commands to manage VMs"],
             ["ckart providers", "List all sub-commands to manage Providers"],
+            ["ckart tunnel --list", "List tunnel clients"],
+            ["ckart tunnel --download", "Download tunnel client"],
+            ["ckart tunnel --connect", "Expose local host to public URL"],
+            ["ckart tunnel --config <token>", "Configure tunnel token"],
+            ["ckart tunnel --create", "Create new tunnel client"],
+            ["ckart tunnel --delete <id>", "Delete a tunnel"],
             ["ckart -h", "Help - list all commands for ckart CLI."],
         ]
         print("\nAvailable commands for ckart CLI:\n")

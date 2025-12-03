@@ -1,24 +1,19 @@
-import requests
 import os
-from ckart.env import set_persistent_env_var
-from dotenv import load_dotenv
 import traceback
-# load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
 
+import requests
+from dotenv import load_dotenv
+
+from ckart.env import set_persistent_env_var
+
+# load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
 
 
 def handle(args):
     BASE_URL = os.getenv("MGMT_SERVER")
-    print(f"Using management server: {BASE_URL}")
     env_path = os.path.join(os.path.expanduser("~"), ".ckart-cli", ".env")
-    print(f"Loading environment variables from: {env_path}")
-
     token = args.token
-    print(f"URL: {BASE_URL}")
     url = f"{BASE_URL}/cli/profile/verifyCliToken"
-
-    print(f"Authenticating with token: {token}")
-    
     try:
         response = requests.post(
             url,
@@ -29,30 +24,27 @@ def handle(args):
                 "wireguard_public_key": os.getenv("WG_PUBLIC_KEY", "fainfiaa0f=4949"),
             },
         )
-        print("response" ,response.text)
         data = response.json()
-
         if response.status_code == 200:
             session_token = data.get("session_token")
             if session_token:
-                env_path = os.path.join(os.path.expanduser(path="~"), ".ckart-cli", ".env")
-                set_persistent_env_var("CKART_SESSION", session_token, env_file=env_path)
-                config_path = r"C:\\Users\\%USERNAME%\\Documents\\WireGuard\\demo-client.conf"
-                config_path = os.path.expandvars(config_path)
-
-                # set_persistent_env_var("MGMT_SERVER", "https://backend.computekart.com")
-                # set_persistent_env_var("LISTEN_PORT", 51820)
-                # set_persistent_env_var("WIREGUARD_EXE", r"C:\\Program Files\\WireGuard\\wireguard.exe")
-                # set_persistent_env_var("CONFIG_PATH", config_path)
-                # set_persistent_env_var("CONFIG_NAME", "demo-client")
-
-                print("[+] Environment variables written to .env")
-                print("\n[+] Authentication successful. Session token saved.")
+                env_path = os.path.join(
+                    os.path.expanduser(path="~"), ".ckart-cli", ".env"
+                )
+                set_persistent_env_var(
+                    "CKART_SESSION", session_token, env_file=env_path
+                )
+                print("[+] Authentication successful. Session token saved.")
+                print("[i] You can now use other ckart commands.")
             else:
-                print("[-] No session token received from server.")
+                print(
+                    "[-] No session token received from server. Please check your token and try again."
+                )
+        elif response.status_code == 401:
+            print(
+                "[-] Invalid authentication token. Please check your token and try again."
+            )
         else:
             print(f"[-] Authentication failed: {data.get('error', 'Unknown error')}")
-            return
     except requests.RequestException as e:
-        traceback(e)
-        print(f"[-] Error connecting to server. {e}")
+        print(f"[-] Failed to connect to server: {e}")

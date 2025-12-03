@@ -1,8 +1,10 @@
 import os
+
 import requests
 from dotenv import load_dotenv
 
 load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
+
 
 def get_input(prompt, type_func=str):
     """Helper function to get user input safely."""
@@ -11,6 +13,7 @@ def get_input(prompt, type_func=str):
             return type_func(input(f"{prompt}: "))
         except ValueError:
             print("Invalid input. Please try again.")
+
 
 def handle(args):
     base_url = os.getenv("MGMT_SERVER")
@@ -48,19 +51,21 @@ def handle(args):
         "remarks": remarks,
     }
 
-    response = requests.post(create_vm_url, json=payload, headers={"Authorization": f"BearerCLI {token}"})
-    print("Response:", response.text)  # Debugging line
-    data=response.json()
-    # print(data)
-
-    if response.status_code == 200:
-        print("\n[+] VM created successfully!")
-        print(f"[+] {data.get('message')}")
-    elif response.status_code == 500:
-        print("\n[-] Invalid VM creation request. Try again.")
-        print(data.get('error',"Failed to reach provider"))
-        return
-    else:
-        print(f"[-] {data.get('error')}")
-        return
-
+    try:
+        response = requests.post(
+            create_vm_url, json=payload, headers={"Authorization": f"BearerCLI {token}"}
+        )
+        data = response.json()
+        if response.status_code == 200:
+            print("\n[+] VM created successfully!")
+            print(f"[+] {data.get('message')}")
+        elif response.status_code == 400:
+            print("[-] Bad request. Please check your input values and try again.")
+            print(data.get("error", "Unknown error."))
+        elif response.status_code == 500:
+            print("[-] Server error. Could not create VM. Please try again later.")
+            print(data.get("error", "Failed to reach provider."))
+        else:
+            print(f"[-] {data.get('error', 'Unknown error occurred.')}")
+    except requests.exceptions.RequestException as e:
+        print(f"[-] Failed to create VM: {e}")

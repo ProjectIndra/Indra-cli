@@ -3,13 +3,8 @@ import ctypes
 import os
 import subprocess
 import time
-
 import nacl.public
 import requests
-
-from ckart.env import load_env
-
-load_env(os.path.expanduser("~/.ckart-cli/.env"))
 
 LISTEN_PORT = os.getenv("LISTEN_PORT")
 WIREGUARD_EXE = os.getenv("WIREGUARD_EXE")
@@ -54,14 +49,14 @@ AllowedIPs = {allowed_ips},{vm_peer_address}
 Endpoint = {endpoint}
 PersistentKeepalive = 5
 """
-    print(config_path)
+    # print(config_path)
 
     ## create the path if it does not exist
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
 
     with open(config_path, "w") as f:
         f.write(config_content)
-    print(f"Configuration file created at {config_path}")
+    # print(f"Configuration file created at {config_path}")
 
 
 def uninstall_tunnel(config_name):
@@ -97,7 +92,7 @@ def open_powershell_with_ssh(username, wireguard_ip):
     wireguard_ip = wireguard_ip.split("/")[0]
 
     # Use the full path to PowerShell executable
-    powershell_path = r"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+    # powershell_path = r"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
 
     # Open PowerShell in a new window with the SSH command
     subprocess.Popen(
@@ -116,7 +111,7 @@ def is_admin():
     """Check if script is running with admin rights."""
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
-    except:
+    except Exception :
         return False
 
 

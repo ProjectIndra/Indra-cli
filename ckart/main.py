@@ -2,7 +2,7 @@ import argparse
 import os
 
 from tabulate import tabulate
-
+from ckart.banner import show_banner
 from ckart.commands import (
     auth,
     connect,
@@ -17,13 +17,10 @@ from ckart.commands import (
 )
 from ckart.env import load_env
 
-# load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
-# load_env(".env")
-# env_path = os.path.expanduser("$HOME\.ckart-cli\.env")
-env_path = os.path.join(os.path.expanduser(path="~"), ".ckart-cli", ".env")
-print(f"Loading environment variables from: {env_path}")
-load_env(env_path)
-# print(os.getenv("MGMT_SERVER"))
+
+ENV = os.path.join(os.path.expanduser(path="~"), ".ckart-cli", ".env")
+# print(f"Loading environment variables from: {ENV}")
+load_env(ENV)
 
 
 def main():
@@ -62,19 +59,16 @@ def main():
     def vms_handle(args):
         if args.help:
             commands = [
-                ["ckart vms", "Show all active VMs"],
-                ["ckart vms -a or ckart vms --all", "List all VMs"],
-                ["ckart vms --create <provider_id>", "Create a new VM"],
-                ["ckart vms --connect <vm_id>", "Connect to WireGuard network"],
-                [
-                    "ckart vms --disconnect <vm_id>",
-                    "Disconnect from WireGuard network",
-                ],
-                ["ckart vms --start <vm_id>", "Start a VM"],
-                ["ckart vms --stop <vm_id>", "Stop a VM"],
-                ["ckart vms --remove <vm_id>", "Remove a VM"],
-                ["ckart vms --remove -f or --force <vm_id>", "Force remove a VM"],
-                ["ckart vms -h or ckart vms --help", "Show help for 'ckart vms'"],
+                ["ckart vms"                                    , "Show all active VMs"],
+                ["ckart vms -a or ckart vms --all"              , "List all VMs"],
+                ["ckart vms --create <provider_id>"             , "Create a new VM"],
+                ["ckart vms --connect <vm_id>"                  , "Connect to WireGuard network"],
+                ["ckart vms --disconnect <vm_id>"               , "Disconnect from WireGuard network",],
+                ["ckart vms --start <vm_id>"                    , "Start a VM"],
+                ["ckart vms --stop <vm_id>"                     , "Stop a VM"],
+                ["ckart vms --remove <vm_id>"                   , "Remove a VM"],
+                ["ckart vms --remove -f or --force <vm_id>"     , "Force remove a VM"],
+                ["ckart vms -h or ckart vms --help"             , "Show help for 'ckart vms'"],
             ]
             print("\nAvailable commands for 'ckart vms':\n")
             print(tabulate(commands, headers=["Command", "Description"]), "\n")
@@ -138,12 +132,12 @@ def main():
         action="store_true",
         help="List all tunnel clients",
     )
-    tunnel_parser.add_argument(
-        "--add",
-        metavar="token",
-        type=str,
-        help="Register/add tunnel using the provided token",
-    )
+    # tunnel_parser.add_argument(
+    #     "--add",
+    #     metavar="token",
+    #     type=str,
+    #     help="Register/add tunnel using the provided token",
+    # )
     tunnel_parser.add_argument(
         "--connect",
         action="store_true",
@@ -175,6 +169,7 @@ def main():
 
     # Handle help manually to customize output only for top-level help
     if len(os.sys.argv) == 1:
+        show_banner()
         print("\nWelcome to ckart CLI.")
         print('Use "ckart -h" to learn more about ckart commands.\n')
         return
@@ -182,17 +177,12 @@ def main():
     # Only show global help if -h/--help is the only argument or is directly after the program name
     if len(os.sys.argv) == 2 and (os.sys.argv[1] == "-h" or os.sys.argv[1] == "--help"):
         commands = [
-            ["ckart heartbeat", "Check if server is online"],
-            ["ckart auth <token>", "Authenticate CLI session."],
-            ["ckart vms -h", "List all sub-commands to manage VMs"],
-            ["ckart providers", "List all sub-commands to manage Providers"],
-            ["ckart tunnel --list", "List tunnel clients"],
-            ["ckart tunnel --download", "Download tunnel client"],
-            ["ckart tunnel --connect", "Expose local host to public URL"],
-            ["ckart tunnel --config <token>", "Configure tunnel token"],
-            ["ckart tunnel --create", "Create new tunnel client"],
-            ["ckart tunnel --delete <id>", "Delete a tunnel"],
-            ["ckart -h", "Help - list all commands for ckart CLI."],
+            ["ckart heartbeat"      , "Check if server is online"],
+            ["ckart auth <token>"   , "Authenticate CLI session from Manage CLIs page on computekart.com."],
+            ["ckart vms -h"         , "List all sub-commands to manage VMs"],
+            ["ckart providers -h"   , "List all sub-commands to manage Providers"],
+            ["ckart tunnel -h"      , "List all sub-commands to manage Tunnel feature"],
+            ["ckart -h"             , "Help - list all commands for ckart CLI."],
         ]
         print("\nAvailable commands for ckart CLI:\n")
         print(tabulate(commands, headers=["Command", "Description"]), "\n")
@@ -204,12 +194,16 @@ def main():
     if os.getenv("CKART_SESSION") is None and args.command != "auth":
         print("Welcome to ckart CLI!")
         print("[-] No session found. Please login using 'ckart auth <token>'")
-        print("[-] You can get this token from the ckart web app.")
+        print("[-] You can get this token from the ckart web app under Manage CLIs section.")
         print("[-] For more information, visit: https://computekart.com/docs")
         exit(1)
 
     if hasattr(args, "func"):
-        args.func(args)
+        try:
+            args.func(args)
+        except KeyboardInterrupt:
+            print("\n[!] Operation cancelled by user (Ctrl+C).")
+            return
     else:
         parser.print_help()
 

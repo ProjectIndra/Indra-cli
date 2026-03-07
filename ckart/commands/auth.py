@@ -1,13 +1,6 @@
 import os
-import traceback
-
 import requests
-from dotenv import load_dotenv
-
 from ckart.env import set_persistent_env_var
-
-# load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
-
 
 def handle(args):
     BASE_URL = os.getenv("MGMT_SERVER")

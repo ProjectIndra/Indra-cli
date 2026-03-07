@@ -22,19 +22,19 @@ def set_persistent_env_var(key, value, env_file=".env"):
     Set or update an environment variable in a project-specific .env file.
     The change does not persist globally but can be sourced manually.
     """
-    print("setting persistent env var in", env_file)
+    # print("setting persistent env var in", env_file)
     lines = []
     updated = False
 
     # Read existing .env file if it exists
     if os.path.exists(env_file):
-        with open(env_file, "r", encoding="utf-8-sig") as f:
-            for l in f:
-                if l.strip().startswith(f"{key}="):
+        with open(env_file, "r", encoding="utf-8-sig") as file:
+            for line in file:
+                if line.strip().startswith(f"{key}="):
                     lines.append(f'{key}="{value}"\n')  # Update existing key
                     updated = True
                 else:
-                    lines.append(l)
+                    lines.append(line)
 
     if not updated:
         lines.append(f'\n{key}="{value}"\n')  # Add new key if missing

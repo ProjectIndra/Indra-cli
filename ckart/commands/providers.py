@@ -1,35 +1,26 @@
 import os
-
 import requests
-from dotenv import load_dotenv
-from tabulate import tabulate
-
-load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
+from ckart import output
 
 
 # Function to show available provider commands
 def print_provider_commands():
     commands = [
-        ["ckart providers -a/--all", "List all providers"],
-        [
-            "ckart providers -d/--details <providerID>",
-            "Show details of provider with ID 1",
-        ],
-        [
-            "ckart providers 1 -q/--query <vCPU> <RAM>(GB) <Storage>(GB)",
-            "Query provider 1 with 4 vCPUs, 8GB RAM, 100GB storage",
-        ],
+        ["ckart providers -a/--all"                                                     , "List all providers"],
+        ["ckart providers -d/--details <providerID>"                                    , "Show details of provider with providerID",],
+        ["ckart providers <providerID> -q/--query <vCPU> <RAM>(GB) <Storage>(GB)"       , "Query provider 1 with 4 vCPUs, 8GB RAM, 100GB storage"],
     ]
 
-    print("\n🔹 Available Provider Commands:\n")
-    print(tabulate(commands, headers=["Command", "Description"]), "\n")
+    output.plain("\nAvailable provider commands:\n")
+    output.table(commands, headers=["Command", "Description"])
+    output.plain()
 
 
 # Function to print all providers (-a or --all)
 def print_all_providers(data):
     active_providers = data.get("all_providers", [])
     if not active_providers:
-        print("[!] No providers found. Please add a provider or try again later.")
+        output.warning("No providers found. Please add a provider or try again later.")
         return
     table_data = [
         [
@@ -52,37 +43,42 @@ def print_all_providers(data):
         "Max Networks",
         "Status",
     ]
-    print("\n[+] List of All Providers:\n")
-    print(tabulate(table_data, headers=headers), "\n")
+    output.success("List of all providers:")
+    output.table(table_data, headers=headers)
+    output.plain()
 
 
 # Function to print details of a specific provider (-d or --details)
 def print_provider_details(data):
     if not data:
-        print("[-] Provider not found.")
+        output.error("Provider not found.")
         return
     table_data = [[key, value] for key, value in data.items()]
 
-    print("\n[+] Provider Details:\n")
-    print(tabulate(table_data, headers=["Attribute", "Value"]))
-    print("\n")
+    output.success("Provider details:")
+    output.table(table_data, headers=["Attribute", "Value"])
+    output.plain()
 
 
 # Function to print provider query results (provider_id -q vcpus ram storage)
 def print_provider_query_results(data, provider_id):
     can_create = data.get("can_create", False)
     if not can_create:
-        print(
-            f"[-] Matching providers found cannot create vm for the given query for {provider_id}."
+        output.error(
+            f"Matching providers found cannot create VM with the requested resources for {provider_id}."
         )
-        print(f"[-] error: {data}")
+        output.error(f"Error payload: {data}")
     else:
-        print(f"[+] Matching provider found for {provider_id}.")
+        output.success(f"Matching provider found for {provider_id}.")
 
 
 # Function to handle provider-related CLI commands
 def handle(args):
     base_url = os.getenv("MGMT_SERVER")
+
+    if args.help:
+        print_provider_commands()
+        return
 
     # Determine API endpoint based on arguments
     if (
@@ -104,7 +100,7 @@ def handle(args):
         endpoint = "/providers/lists"
         type = "GET"
     else:
-        print("[-] Error: Invalid command usage. Provide a valid flag or provider ID.")
+        output.error("Invalid command usage. Provide a valid flag or provider ID.")
         print_provider_commands()
         return
 
@@ -142,11 +138,13 @@ def handle(args):
         response.raise_for_status()  # Handle HTTP errors (4xx, 5xx)
         data = response.json()
         if not data:
-            print("[!] No providers found. Please add a provider or try again later.")
+            output.warning(
+                "No providers found. Please add a provider or try again later."
+            )
             return
         if args.provider is not None and args.query:
             print_provider_query_results(data=data, provider_id=args.provider)
         elif args.all:
             print_all_providers(data=data)
     except requests.exceptions.RequestException as e:
-        print(f"[-] Failed to fetch providers: {e}")
+        output.error(f"Failed to fetch providers: {e}")

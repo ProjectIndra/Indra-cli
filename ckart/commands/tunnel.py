@@ -5,7 +5,8 @@ from typing import Optional
 
 import requests
 from dotenv import load_dotenv
-from tabulate import tabulate
+
+from ckart import output
 
 load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
 BASE_URL = os.getenv("MGMT_SERVER")
@@ -13,6 +14,7 @@ TUNNEL_VERSION = "1.0.0"
 JAR_NAME = f"ComputeKart-tunnel-client-{TUNNEL_VERSION}.jar"
 JAR_URL = f"https://fileshare.computekart.com/{JAR_NAME}"
 VERSION_FILE = os.path.expanduser("~/.ckart-cli/tunnel.version")
+
 
 def _ensure_env_file() -> str:
     env_file_path = os.path.expanduser("~/.ckart-cli/.env")
@@ -33,9 +35,7 @@ def _read_token(
                 tokens = line.strip().split("=")
                 token = tokens[1] if tokens[1] else ""
                 break
-    # print(token)
     token = token.strip('"')
-    # print(token)
     return token
 
 
@@ -72,8 +72,7 @@ def _download_jar(dest_path: str) -> bool:
 
         return True
 
-    except requests.exceptions.RequestException as e:
-        # print(e)
+    except requests.exceptions.RequestException:
         return False
 
 
@@ -91,16 +90,16 @@ def _needs_update() -> bool:
 
 def _pretty_list_clients(clients_json):
     if not clients_json:
-        print("[!] No tunnels found for your account.")
+        output.warning("No tunnels found for your account.")
         return
-    print("\nYour tunnel clients:")
+    output.plain("\nYour tunnel clients:")
     headers = ["Tunnel ID", "Username", "Tunnel Token"]
     table_data = [
         [c.get("tunnelNo"), c.get("username"), c.get("tunnelToken")]
         for c in clients_json
     ]
-    print(tabulate(table_data, headers=headers))
-    print()
+    output.table(table_data, headers=headers)
+    output.plain()
 
 
 def _create_tunnel_client(session_token: Optional[str]):
@@ -113,7 +112,7 @@ def _create_tunnel_client(session_token: Optional[str]):
         tunnel_url = data.get("tunnel_url")
         session_tok = data.get("session_token")
         if tunnel_url:
-            print(f"[+] Tunnel created: {tunnel_url}")
+            output.success(f"Tunnel created: {tunnel_url}")
             parts = tunnel_url.split(".")[0].split("-")
             if len(parts) >= 2:
                 tunnel_no = parts[0]
@@ -122,11 +121,11 @@ def _create_tunnel_client(session_token: Optional[str]):
                 _set_env_var("TUNNEL_USERNAME", username)
             if session_tok:
                 _set_env_var("TUNNEL_TOKEN", session_tok)
-            print("[i] Saved tunnel details to ~/.ckart-cli/.env")
+            output.info("Saved tunnel details to ~/.ckart-cli/.env")
         else:
-            print("[-] Unexpected response from server when creating tunnel.")
+            output.error("Unexpected response from server when creating tunnel.")
     except requests.exceptions.RequestException as e:
-        print(f"[-] Failed to create tunnel client: {e}")
+        output.error(f"Failed to create tunnel client: {e}")
 
 
 def _get_user_clients(session_token: Optional[str]):
@@ -138,7 +137,7 @@ def _get_user_clients(session_token: Optional[str]):
         data = resp.json()
         return data
     except requests.exceptions.RequestException as e:
-        print(f"[-] Failed to list tunnels: {e}")
+        output.error(f"Failed to list tunnels: {e}")
         return None
 
 
@@ -150,45 +149,44 @@ def _delete_tunnel(session_token: Optional[str], tunnel_id: str):
         resp = requests.post(url, headers=headers, json=payload, timeout=15)
         resp.raise_for_status()
         data = resp.json() if resp.content else {"message": "Deleted"}
-        print(f"[+] {data.get('message', 'Tunnel deleted successfully')}")
+        output.success(data.get("message", "Tunnel deleted successfully"))
     except requests.exceptions.RequestException as e:
-        print(f"[-] Failed to delete tunnel: {e}")
+        output.error(f"Failed to delete tunnel: {e}")
 
 
 def _run_jar_connect(dest_path: str, host: str, port: str, token: str):
     if not os.path.isfile(dest_path):
-        print(
-            "[-] Tunnel client not found. Please download it first using 'ckart tunnel --download' or use --connect to download automatically."
+        output.error(
+            "Tunnel client not found. Download with 'ckart tunnel --download' or run --connect to fetch automatically."
         )
         return
     cmd = ["java", "-cp", dest_path, "main.Main", token, host, str(object=port)]
     try:
-        # print(cmd)
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         out = proc.stdout.strip()
         err = proc.stderr.strip()
         if proc.returncode != 0:
-            print(f"[-] Tunnel client exited with error:\n{err or out}")
+            output.error(f"Tunnel client exited with error:\n{err or out}")
             return
-        # print("[+] Tunnel client finished successfully.")
+        # tunnel client finished successfully (no message)
         if out:
             try:
                 parsed = json.loads(out)
-                print(json.dumps(parsed, indent=2))
+                output.plain(json.dumps(parsed, indent=2))
             except Exception:
                 lines = [line for line in out.splitlines() if line.strip()]
                 if lines:
-                    print(lines[-1])
-        else:
-            print("[i] Tunnel client ran but did not produce console output.")
+                    output.plain(lines[-1])
+        # else:
+            # output.info("Tunnel client ran but did not produce console output.")
     except subprocess.TimeoutExpired:
-        print("[-] Tunnel client timed out.")
+        output.error("Tunnel client timed out.")
     except FileNotFoundError:
-        print(
-            "[-] Java runtime not found. Please install Java and ensure 'java' is on your PATH."
+        output.error(
+            "Java runtime not found. Please install Java and ensure 'java' is on your PATH."
         )
     except Exception as e:
-        print(f"[-] Failed to run tunnel client: {e}")
+        output.error(f"Failed to run tunnel client: {e}")
 
 
 def handle(args):
@@ -203,8 +201,8 @@ def handle(args):
       --delete <id> : delete tunnel
     """
     if not BASE_URL:
-        print(
-            "[-] MGMT_SERVER is not set. Please set the management server URL in your .env file."
+        output.error(
+            "MGMT_SERVER is not set. Please set the management server URL in your .env file."
         )
         return
 
@@ -213,6 +211,18 @@ def handle(args):
     dest_path = os.path.join(downloads_dir, JAR_NAME)
 
     # SWITCH-like dispatch
+    if getattr(args, "help", False):
+        commands = [
+            ["ckart tunnel --list"                 , "List all tunnel clients"],
+            ["ckart tunnel --download"             , "Download/install the tunnel client jar"],
+            ["ckart tunnel --connect"              , "Expose local host and port to public URL"],
+            ["ckart tunnel --config <token>"       , "Set tunnel token for auto-configuration"],
+            ["ckart tunnel --create"               , "Create a new tunnel client and auto-config it"],
+            ["ckart tunnel --delete <tunnel_id>"   , "Delete a tunnel client by ID"],
+        ]
+        output.plain("\nAvailable 'ckart tunnel' commands:\n")
+        output.table(commands, headers=["Command", "Description"])
+        return
     if getattr(args, "list", False):
         clients = _get_user_clients(session_token)
         if clients is not None:
@@ -221,39 +231,39 @@ def handle(args):
 
     if getattr(args, "download", False):
         if os.path.isfile(dest_path) and not _needs_update():
-            print("[+] Tunnel client already up-to-date:", dest_path)
+            output.info(f"Tunnel client already up-to-date: {dest_path}")
             return
 
-        print("[i] Updating tunnel client...")
+        output.info("Updating tunnel client...")
         ok = _download_jar(dest_path)
         if ok:
-            print(f"[+] Tunnel client downloaded to: {dest_path}")
+            output.success(f"Tunnel client downloaded to: {dest_path}")
         else:
-            print("[-] Failed to download tunnel client. Check network and try again.")
+            output.error("Failed to download tunnel client. Check network and try again.")
         return
 
     if getattr(args, "connect", False):
         if not os.path.isfile(dest_path) or _needs_update():
-            print("[i] Installing / updating tunnel client...")
+            output.info("Installing / updating tunnel client...")
             if not _download_jar(dest_path):
-                print("[-] Failed to download tunnel client. Aborting connect.")
+                output.error("Failed to download tunnel client. Aborting connect.")
                 return
         token = _read_token()
         if token == "":
-            print("[-] Token is not configured.")
+            output.error("Tunnel token is not configured.")
             return
         host = input("Enter host name to expose (e.g. myservice): ").strip()
         port = input("Enter local port to forward (e.g. 8080): ").strip()
         if not host or not port:
-            print("[-] Host and port are required to connect.")
+            output.error("Host and port are required to connect.")
             return
-        print(f"[i] Starting tunnel for {host}:{port}...")
+        output.info(f"Starting tunnel for {host}:{port}...")
         _run_jar_connect(dest_path, host, port, token)
         t_no = os.getenv("TUNNEL_NO")
         t_user = os.getenv("TUNNEL_USERNAME")
         if t_no and t_user:
             url = f"https://{t_no}-{t_user}.computekart.com"
-            print(f"[+] Public URL: {url}")
+            output.success(f"Public URL: {url}")
         return
 
     if getattr(args, "config", None):
@@ -265,11 +275,13 @@ def handle(args):
             ]
             if token in valid_tokens:
                 _set_env_var("TUNNEL_TOKEN", token)
-                print("[+] Tunnel token saved to ~/.ckart-cli/.env")
+                output.success("Tunnel token saved to ~/.ckart-cli/.env")
             else:
-                print("[-] The provided tunnel token does not exist in your account.")
+                output.error(
+                    "The provided tunnel token does not exist in your account."
+                )
         else:
-            print("[-] No Tunnel clients exist!")
+            output.error("No Tunnel clients exist!")
         return
 
     if getattr(args, "create", False):
@@ -281,4 +293,4 @@ def handle(args):
         _delete_tunnel(session_token, tid)
         return
 
-    print("[-] No tunnel action provided. Use 'ckart tunnel -h' for usage information.")
+    output.error("No tunnel action provided. Use 'ckart tunnel -h' for usage information.")

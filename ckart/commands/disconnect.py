@@ -3,6 +3,8 @@ import os
 import requests
 from dotenv import load_dotenv
 
+from ckart import output
+
 load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
 
 BASE_URL = os.getenv("MGMT_SERVER")
@@ -16,16 +18,18 @@ def handle(args):
         response = requests.get(url, headers={"Authorization": f"BearerCLI {token}"})
         data = response.json()
         if response.status_code == 200:
-            print(f"[+] VM '{args.disconnect}' disconnected from WireGuard network.")
+            output.success(
+                f"VM '{args.disconnect}' disconnected from WireGuard network."
+            )
         elif response.status_code == 404:
-            print(
-                f"[-] VM '{args.disconnect}' not found. Please check the VM ID and try again."
+            output.error(
+                f"VM '{args.disconnect}' not found. Please verify the VM ID and retry."
             )
         elif response.status_code == 500:
-            print(
-                f"[-] Server error: {data.get('error', f'Error disconnecting VM {args.disconnect}')}"
+            output.error(
+                f"Server error: {data.get('error', f'Error disconnecting VM {args.disconnect}')}"
             )
         else:
-            print(f"[-] {data.get('error', 'Unknown error occurred.')}")
+            output.error(data.get("error", "Unknown error occurred."))
     except requests.exceptions.RequestException as e:
-        print(f"[-] Failed to disconnect VM '{args.disconnect}': {e}")
+        output.error(f"Failed to disconnect VM '{args.disconnect}': {e}")

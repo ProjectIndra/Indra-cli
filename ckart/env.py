@@ -1,5 +1,7 @@
 import os
 
+from ckart import output
+
 
 def load_env(env_file=".env"):
     if os.path.exists(env_file):
@@ -13,7 +15,6 @@ def load_env(env_file=".env"):
                 key, value = line.split("=", 1)
                 key = key.strip()
                 value = value.strip().strip('"')
-                # print(f"[+] Setting environment variable: {key}={value}")
                 os.environ[key] = value
 
 
@@ -22,7 +23,6 @@ def set_persistent_env_var(key, value, env_file=".env"):
     Set or update an environment variable in a project-specific .env file.
     The change does not persist globally but can be sourced manually.
     """
-    # print("setting persistent env var in", env_file)
     lines = []
     updated = False
 
@@ -46,4 +46,4 @@ def set_persistent_env_var(key, value, env_file=".env"):
     # now update the environment variable
     load_env(env_file)
 
-    print(f"[+] Successfully set {key} in {env_file}.")
+    # output.success(f"Successfully set {key} in {env_file}.")

@@ -3,8 +3,11 @@ import ctypes
 import os
 import subprocess
 import time
+
 import nacl.public
 import requests
+
+from ckart import output
 
 LISTEN_PORT = os.getenv("LISTEN_PORT")
 WIREGUARD_EXE = os.getenv("WIREGUARD_EXE")
@@ -49,14 +52,11 @@ AllowedIPs = {allowed_ips},{vm_peer_address}
 Endpoint = {endpoint}
 PersistentKeepalive = 5
 """
-    # print(config_path)
-
     ## create the path if it does not exist
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
 
     with open(config_path, "w") as f:
         f.write(config_content)
-    # print(f"Configuration file created at {config_path}")
 
 
 def uninstall_tunnel(config_name):
@@ -64,9 +64,9 @@ def uninstall_tunnel(config_name):
         subprocess.run(
             [WIREGUARD_EXE, "/uninstalltunnelservice", config_name], check=True
         )
-        print(f"Tunnel '{config_name}' stopped and uninstalled.")
+        output.success(f"Tunnel '{config_name}' stopped and uninstalled.")
     except subprocess.CalledProcessError:
-        print(f"No existing tunnel service '{config_name}' to uninstall.")
+        output.info(f"No existing tunnel service '{config_name}' to uninstall.")
 
 
 def install_tunnel(config_path, config_name):
@@ -81,13 +81,13 @@ def install_tunnel(config_path, config_name):
         subprocess.run(
             [WIREGUARD_EXE, "/installtunnelservice", config_path], check=True
         )
-        print(f"Tunnel '{config_name}' installed and started.")
+        output.success(f"Tunnel '{config_name}' installed and started.")
     except subprocess.CalledProcessError as e:
-        print(f"Failed to install tunnel: {e}")
+        output.error(f"Failed to install tunnel: {e}")
 
 
 def open_powershell_with_ssh(username, wireguard_ip):
-    print(f"Opening PowerShell with SSH to {username}@{wireguard_ip}")
+    output.info(f"Opening PowerShell with SSH to {username}@{wireguard_ip}")
 
     wireguard_ip = wireguard_ip.split("/")[0]
 
@@ -111,7 +111,7 @@ def is_admin():
     """Check if script is running with admin rights."""
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
-    except Exception :
+    except Exception:
         return False
 
 
@@ -135,11 +135,11 @@ def handle(args):
         if response.status_code != 200 or data.get("error"):
             error_msg = data.get("error", "Unknown error occurred.")
             if "Peer already exists" in error_msg:
-                print(
-                    "[!] You are already connected to this VM's WireGuard network. If you need to reconnect, please disconnect first using 'ckart vms --disconnect <vm_id>'."
+                output.warning(
+                    "You are already connected to this VM's WireGuard network. To reconnect, disconnect first using 'ckart vms --disconnect <vm_id>'."
                 )
             else:
-                print(f"[-] Failed to connect to VM: {error_msg}")
+                output.error(f"Failed to connect to VM: {error_msg}")
             return
         wireguard_ip = data.get("vm_peer_address")
         vm_public_key = data.get("interface_public_key")
@@ -151,8 +151,8 @@ def handle(args):
         vm_peer_address = data.get("vm_peer_address")
 
         if not vm_public_key:
-            print(
-                "[-] Invalid backend response: Missing public key. Please contact support."
+            output.error(
+                "Invalid backend response: missing public key. Please contact support."
             )
             return
 
@@ -167,13 +167,13 @@ def handle(args):
         )
 
         if not is_admin():
-            print(
-                "[-] This script requires admin privileges. Please run as administrator or open a new admin shell."
+            output.error(
+                "This script requires administrator privileges. Run as admin or open an elevated shell."
             )
             return
-        print("[+] Running WireGuard tunnel service...")
+        output.info("Running WireGuard tunnel service...")
         install_tunnel(CONFIG_PATH, CONFIG_NAME)
         time.sleep(5)
         open_powershell_with_ssh(username, wireguard_ip)
     except requests.exceptions.RequestException as e:
-        print(f"[-] Failed to connect to VM: {e}")
+        output.error(f"Failed to connect to VM: {e}")

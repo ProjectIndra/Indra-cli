@@ -1,25 +1,17 @@
 import argparse
 import os
-
-from tabulate import tabulate
+from ckart import output
 from ckart.banner import show_banner
 from ckart.commands import (
     auth,
-    connect,
-    create,
-    disconnect,
+    vms,
     heartbeat,
     providers,
-    ps,
-    rm,
-    start_stop,
     tunnel,
 )
 from ckart.env import load_env
 
-
 ENV = os.path.join(os.path.expanduser(path="~"), ".ckart-cli", ".env")
-# print(f"Loading environment variables from: {ENV}")
 load_env(ENV)
 
 
@@ -55,41 +47,7 @@ def main():
     vms_parser.add_argument(
         "-h", "--help", action="store_true", help="Show help for 'ckart vms'"
     )
-
-    def vms_handle(args):
-        if args.help:
-            commands = [
-                ["ckart vms"                                    , "Show all active VMs"],
-                ["ckart vms -a or ckart vms --all"              , "List all VMs"],
-                ["ckart vms --create <provider_id>"             , "Create a new VM"],
-                ["ckart vms --connect <vm_id>"                  , "Connect to WireGuard network"],
-                ["ckart vms --disconnect <vm_id>"               , "Disconnect from WireGuard network",],
-                ["ckart vms --start <vm_id>"                    , "Start a VM"],
-                ["ckart vms --stop <vm_id>"                     , "Stop a VM"],
-                ["ckart vms --remove <vm_id>"                   , "Remove a VM"],
-                ["ckart vms --remove -f or --force <vm_id>"     , "Force remove a VM"],
-                ["ckart vms -h or ckart vms --help"             , "Show help for 'ckart vms'"],
-            ]
-            print("\nAvailable commands for 'ckart vms':\n")
-            print(tabulate(commands, headers=["Command", "Description"]), "\n")
-        elif args.create:
-            create.handle(args)
-        elif args.all:
-            ps.handle(args)
-        elif args.connect:
-            connect.handle(args)
-        elif args.disconnect:
-            disconnect.handle(args)
-        elif args.start:
-            start_stop.handle(args)
-        elif args.stop:
-            start_stop.handle(args)
-        elif args.remove:
-            rm.handle(args)
-        else:
-            ps.handle(args)
-
-    vms_parser.set_defaults(func=vms_handle)
+    vms_parser.set_defaults(func=vms.handle)
 
     # Heartbeat Command
     heartbeat_parser = subparsers.add_parser(
@@ -98,7 +56,10 @@ def main():
     heartbeat_parser.set_defaults(func=heartbeat.handle)
 
     # Provider Command
-    provider_parser = subparsers.add_parser("providers", help="Manage providers.")
+    provider_parser = subparsers.add_parser("providers", help="Manage providers.", add_help=False)
+    provider_parser.add_argument(
+        "-h", "--help", action="store_true", help="Show help for 'ckart providers'"
+    )
     provider_parser.add_argument(
         "-a", "--all", action="store_true", help="Get details of all providers"
     )
@@ -126,18 +87,15 @@ def main():
     provider_parser.set_defaults(func=providers.handle)
 
     # Tunnel command
-    tunnel_parser = subparsers.add_parser("tunnel", help="Manage Tunnel feature")
+    tunnel_parser = subparsers.add_parser("tunnel", help="Manage Tunnel feature", add_help=False)
+    tunnel_parser.add_argument(
+        "-h", "--help", action="store_true", help="Show help for 'ckart tunnel'"
+    )
     tunnel_parser.add_argument(
         "--list",
         action="store_true",
         help="List all tunnel clients",
     )
-    # tunnel_parser.add_argument(
-    #     "--add",
-    #     metavar="token",
-    #     type=str,
-    #     help="Register/add tunnel using the provided token",
-    # )
     tunnel_parser.add_argument(
         "--connect",
         action="store_true",
@@ -152,7 +110,7 @@ def main():
         "--config",
         metavar="token",
         type=str,
-        help="Set tunnel token in .env file",
+        help="Set tunnel token for auto-configuration",
     )
     tunnel_parser.add_argument(
         "--create",
@@ -170,8 +128,8 @@ def main():
     # Handle help manually to customize output only for top-level help
     if len(os.sys.argv) == 1:
         show_banner()
-        print("\nWelcome to ckart CLI.")
-        print('Use "ckart -h" to learn more about ckart commands.\n')
+        output.plain("\nWelcome to ckart CLI.")
+        output.plain('Use "ckart -h" to learn more about ckart commands.\n')
         return
 
     # Only show global help if -h/--help is the only argument or is directly after the program name
@@ -184,25 +142,28 @@ def main():
             ["ckart tunnel -h"      , "List all sub-commands to manage Tunnel feature"],
             ["ckart -h"             , "Help - list all commands for ckart CLI."],
         ]
-        print("\nAvailable commands for ckart CLI:\n")
-        print(tabulate(commands, headers=["Command", "Description"]), "\n")
+        output.plain("\nAvailable commands for ckart CLI:\n")
+        output.table(commands, headers=["Command", "Description"])
+        output.plain()
         return
 
     # Parse the arguments
     args = parser.parse_args()
 
     if os.getenv("CKART_SESSION") is None and args.command != "auth":
-        print("Welcome to ckart CLI!")
-        print("[-] No session found. Please login using 'ckart auth <token>'")
-        print("[-] You can get this token from the ckart web app under Manage CLIs section.")
-        print("[-] For more information, visit: https://computekart.com/docs")
+        output.plain("Welcome to ckart CLI!")
+        output.error("No session found. Please login using 'ckart auth <token>'")
+        output.info(
+            "You can get this token from the ckart web app under Manage CLIs section."
+        )
+        output.info("For more information, visit: https://computekart.com/docs")
         exit(1)
 
     if hasattr(args, "func"):
         try:
             args.func(args)
         except KeyboardInterrupt:
-            print("\n[!] Operation cancelled by user (Ctrl+C).")
+            output.warning("Operation cancelled by user (Ctrl+C).")
             return
     else:
         parser.print_help()

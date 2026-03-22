@@ -10,9 +10,28 @@ from ckart.commands import (
     tunnel,
 )
 from ckart.env import load_env
+import requests
+import json
 
 ENV = os.path.join(os.path.expanduser(path="~"), ".ckart-cli", ".env")
 load_env(ENV)
+_orig_request = requests.Session.request
+
+
+
+def _debug_request(self, method, url, **kwargs):
+    response = _orig_request(self, method, url, **kwargs)
+    if os.getenv("MODE") == "DEBUG":
+        output.plain(f"[DEBUG] {method.upper()} {url}")
+        output.plain(f"[DEBUG] Status Code: {response.status_code}")
+        try:
+            output.plain(f"[DEBUG] Response JSON:\n{json.dumps(response.json(), indent=2)}")
+        except Exception:
+            output.plain(f"[DEBUG] Response Text:\n{response.text}")
+    return response
+
+requests.Session.request = _debug_request
+
 
 
 def main():
@@ -41,6 +60,7 @@ def main():
     vms_parser.add_argument("--start", type=str, help="Start a VM")
     vms_parser.add_argument("--stop", type=str, help="Stop a VM")
     vms_parser.add_argument("-rm", "--remove", type=str, help="Remove a VM")
+    vms_parser.add_argument("-p", "--provider", type=str, help="Provider ID of the VM")
     vms_parser.add_argument(
         "-f", "--force", action="store_true", help="Force remove a VM"
     )

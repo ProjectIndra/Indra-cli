@@ -1,8 +1,6 @@
 import os
-
 import requests
 from dotenv import load_dotenv
-
 from ckart import output
 
 load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
@@ -25,7 +23,7 @@ def handle(args):
     token = os.getenv("CKART_SESSION")
 
     try:
-        response = requests.get(url, headers={"Authorization": f"BearerCLI {token}"})
+        response = requests.post(url, headers={"Authorization": f"BearerCLI {token}"}, json={"vm_name": args.remove})
         data = response.json()
         if response.status_code == 200:
             output.success(f"VM '{args.remove}' removed successfully.")
@@ -41,5 +39,4 @@ def handle(args):
             output.error(data.get("error", "Unknown error occurred."))
     except requests.exceptions.RequestException as e:
         output.error(f"Failed to remove VM '{args.remove}': {e}")
-    # second request block was duplicate and has been removed to avoid confusion
-    # http response already handled above
+

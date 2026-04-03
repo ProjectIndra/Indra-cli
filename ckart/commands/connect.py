@@ -6,7 +6,6 @@ import time
 
 import nacl.public
 import requests
-
 from ckart import output
 
 LISTEN_PORT = os.getenv("LISTEN_PORT")
@@ -118,7 +117,12 @@ def is_admin():
 def handle(args):
     base_url = os.getenv("MGMT_SERVER")
     token = os.getenv("CKART_SESSION")
-    url = base_url + "/cli/wg/connect"
+
+    if args.connect != None:
+        url = f"{base_url}/cli/wg/connect"
+    else:
+        output.error("Please provide a VM ID to connect.")
+        return
 
     # private_key, public_key = generate_wireguard_keys()
 

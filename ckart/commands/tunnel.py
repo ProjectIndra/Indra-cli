@@ -2,13 +2,9 @@ import json
 import os
 import subprocess
 from typing import Optional
-
 import requests
-from dotenv import load_dotenv
-
 from ckart import output
 
-load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
 BASE_URL = os.getenv("MGMT_SERVER")
 TUNNEL_VERSION = "1.0.0"
 JAR_NAME = f"ComputeKart-tunnel-client-{TUNNEL_VERSION}.jar"
@@ -93,7 +89,7 @@ def _pretty_list_clients(clients_json):
         output.warning("No tunnels found for your account.")
         return
     output.plain("\nYour tunnel clients:")
-    headers = ["Tunnel ID", "Username", "Tunnel Token"]
+    headers = ["Tunnel #", "Username", "Tunnel Token"]
     table_data = [
         [c.get("tunnelNo"), c.get("username"), c.get("tunnelToken")]
         for c in clients_json

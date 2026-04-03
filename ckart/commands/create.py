@@ -1,11 +1,7 @@
 import os
-
 import requests
-from dotenv import load_dotenv
-
 from ckart import output
-
-load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
+from ckart.utils import resolve_prefix
 
 
 def get_input(prompt, type_func=str):
@@ -19,9 +15,26 @@ def get_input(prompt, type_func=str):
 
 def handle(args):
     base_url = os.getenv("MGMT_SERVER")
-
-    provider_id = args.create  # Comes from CLI argument
     token = os.getenv("CKART_SESSION")
+
+    user_prefix = args.create
+    try:
+        list_url = f"{base_url}/providers/all" 
+        list_res = requests.get(list_url, headers={"Authorization": f"BearerCLI {token}"})
+        list_res.raise_for_status()
+        providers = list_res.json().get("providers", [])
+
+        provider_obj, err = resolve_prefix(providers, user_prefix, key="providerId")
+        if err:
+            output.error(err)
+            return
+            
+        provider_id = provider_obj["providerId"]
+        output.info(f"Using Provider: {provider_id}")
+        
+    except Exception as e:
+        output.error(f"Could not verify provider ID: {e}")
+        return
 
     # Step 2: Ask for vCPU, RAM, and Storage and verify
     vcpus = get_input("Enter required vCPUs", int)

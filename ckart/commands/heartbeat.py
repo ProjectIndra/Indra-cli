@@ -20,14 +20,11 @@ def handle(args):
     try:
         response = requests.get(url, timeout=5)
         response.raise_for_status()
-        output.success("MGMT Server is ONLINE!")
         if response.text.strip():
-            output.plain(f"[Server Response]: {response.text.strip()}")
+            output.plain(f"{response.text.strip()}")
     except requests.exceptions.ConnectionError:
-        output.error(
-            "MGMT Server is OFFLINE or unreachable. Check network or server address."
-        )
+        output.error("MGMT Server is unreachable.")
     except requests.exceptions.Timeout:
-        output.error("MGMT Server did not respond in time. Try again later.")
+        output.error("MGMT Server did not respond in time.")
     except requests.exceptions.RequestException as e:
         output.error(f"Failed to check server status: {e}")

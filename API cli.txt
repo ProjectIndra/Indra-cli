@@ -1,0 +1,88 @@
+CKART CLI 
+------
+POST /cli/profile/verifyCliToken
+payload = {
+    "cli_verification_token": "...", 
+    "wireguard_endpoint": "...", 
+    "wireguard_public_key": "..."
+}
+------
+POST /cli/wg/connect
+payload = {
+    "vm_id": "..."
+}
+------
+GET /cli/vms/disconnect?vm_id={vm_id}
+payload = None
+------
+POST /vms/launch
+payload = {
+    "vm_name": "...",
+    "provider_id": "...",
+    "vcpus": "...",
+    "ram": "...",
+    "storage": "...",
+    "vm_image": "...",
+    "remarks": "..."
+}
+------
+POST /vms/removeCLI?vm_name={vm_name}
+payload = {
+    "vm_name": "..."
+}
+------
+POST /vms/forceRemoveCLI?vm_name={vm_name}
+payload = {
+    "vm_name": "..."
+}
+------
+POST /vms/start
+payload = {
+    "vm_id": "...", 
+    "provider_id": ""
+}
+------
+POST /vms/stop
+payload = {
+    "vm_id": "...", 
+    "provider_id": ""
+}
+------
+GET /vms/allVms
+payload = None
+------
+POST /providers/query
+payload = {
+    "provider_id": "...",
+    "vcpus": "...",
+    "ram": "...",
+    "storage": "...",
+    "details": "..."
+}
+------
+GET /providers/lists
+payload = {
+    "provider_id": "...",
+    "vcpus": "...",
+    "ram": "...",
+    "storage": "...",
+    "details": "..."
+}
+------
+POST /ui/createTunnelClient
+payload = None
+------
+POST /ui/getUserClients
+payload = None
+------
+POST /ui/deleteTunnel
+payload = {
+    "tunnel_id": "..."
+}
+------
+GET https://fileshare.computekart.com/ComputeKart-tunnel-client-1.0.0.jar
+payload = None
+------
+GET /
+payload = None
+------

@@ -1,19 +1,20 @@
 import os
-
 import requests
-from dotenv import load_dotenv
-
 from ckart import output
 
-load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
-
-BASE_URL = os.getenv("MGMT_SERVER")
 
 
 def handle(args):
     """Disconnect from the VM WireGuard network."""
-    url = f"{BASE_URL}/cli/vms/disconnect?vm_id={args.disconnect}"
+    BASE_URL = os.getenv("MGMT_SERVER")
     token = os.getenv("CKART_SESSION")
+
+    if args.disconnect != None:
+        url = f"{BASE_URL}/cli/vms/disconnect?vm_id={args.disconnect}"
+    else:
+        output.error("Please provide a VM ID to disconnect.")
+        return
+
     try:
         response = requests.get(url, headers={"Authorization": f"BearerCLI {token}"})
         data = response.json()

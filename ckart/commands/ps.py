@@ -28,7 +28,10 @@ def handle(args):
             active_vms = data.get("active_vms", [])
             if not active_vms:
                 print(
-                    "[!] No active VMs found. Use 'ckart vms --create <provider_id>' to launch a new VM."
+                    "[!] No active VMs found.",
+                    "Start a VM with 'ckart vms --start <vm_id>' or ",
+                    "Create a new VM with 'ckart vms --create <provider_id>'.",
+                    sep="\n"
                 )
                 return
             table_data = [

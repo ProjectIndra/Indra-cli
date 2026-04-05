@@ -34,6 +34,7 @@ def handle(args):
             headers={"Authorization": f"BearerCLI {token}"},
             json={"vm_id": vm_id, "provider_id": ""},
         )
+        print(response.text)
         data = response.json()
         if response.status_code == 200:
             print(f"[+] VM '{vm_id}' {command}ed successfully.")

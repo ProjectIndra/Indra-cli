@@ -1,12 +1,9 @@
 import os
-import traceback
 
 import requests
-from dotenv import load_dotenv
 
+from ckart import output
 from ckart.env import set_persistent_env_var
-
-# load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
 
 
 def handle(args):
@@ -34,17 +31,17 @@ def handle(args):
                 set_persistent_env_var(
                     "CKART_SESSION", session_token, env_file=env_path
                 )
-                print("[+] Authentication successful. Session token saved.")
-                print("[i] You can now use other ckart commands.")
+                output.success("Authentication successful. Session token saved.")
+                output.info("You can now use other ckart commands.")
             else:
-                print(
-                    "[-] No session token received from server. Please check your token and try again."
+                output.error(
+                    "No session token received from server. Please verify your CLI token and try again."
                 )
         elif response.status_code == 401:
-            print(
-                "[-] Invalid authentication token. Please check your token and try again."
+            output.error(
+                "Invalid authentication token. Please check your token on the website and try again."
             )
         else:
-            print(f"[-] Authentication failed: {data.get('error', 'Unknown error')}")
+            output.error(f"Authentication failed: {data.get('error', 'Unknown error')}")
     except requests.RequestException as e:
-        print(f"[-] Failed to connect to server: {e}")
+        output.error(f"Failed to connect to server: {e}")

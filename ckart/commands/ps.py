@@ -1,17 +1,14 @@
 import os
-
 import requests
-from dotenv import load_dotenv
-from tabulate import tabulate
+from ckart import output
 
-load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
 
 
 def handle(args):
     base_url = os.getenv("MGMT_SERVER")
 
     if not base_url:
-        print("Error: MGMT_SERVER URL not set in environment variables.")
+        output.error("MGMT_SERVER URL not set in environment variables.")
         return
 
     endpoint = "/vms/allVms" if args.all else "/vms/allActiveVms"
@@ -27,12 +24,8 @@ def handle(args):
         if not args.all:
             active_vms = data.get("active_vms", [])
             if not active_vms:
-                print(
-                    "[!] No active VMs found.",
-                    "Start a VM with 'ckart vms --start <vm_id>' or ",
-                    "Create a new VM with 'ckart vms --create <provider_id>'.",
-                    sep="\n"
-                )
+                output.warning("No active VMs found.")
+                output.info("Start a VM with 'ckart vms --start <vm_id>' or Create a new VM with 'ckart vms --create <provider_id>'")
                 return
             table_data = [
                 [
@@ -44,14 +37,14 @@ def handle(args):
                 for vm in active_vms
             ]
             headers = ["VM ID", "VM Name", "ProviderId", "WireGuard Status"]
-            print("\n[+] Active VMs:")
-            print(tabulate(table_data, headers=headers))
-            print()
+            output.success("Active VMs:")
+            output.table(table_data, headers=headers)
+            output.plain()
         elif args.all:
             all_vms = data.get("all_vms", [])
             if not all_vms:
-                print(
-                    "[!] No VMs found. Use 'ckart vms --create <provider_id>' to launch a new VM."
+                output.warning(
+                    "No VMs found. Use 'ckart vms --create <provider_id>' to launch a new VM."
                 )
                 return
             table_data = [
@@ -65,11 +58,11 @@ def handle(args):
                 for vm in all_vms
             ]
             headers = ["VM ID", "VM Name", "Provider Id", "Status", "WireGuard Status"]
-            print("\n[+] All VMs:")
-            print(tabulate(table_data, headers=headers))
-            print()
+            output.success("All VMs:")
+            output.table(table_data, headers=headers)
+            output.plain()
         else:
-            print("[!] Invalid arguments. Use 'ckart vms -h' for help.")
+            output.warning("Invalid arguments. Use 'ckart vms -h' for help.")
 
     except requests.exceptions.RequestException as e:
-        print(f"[-] Failed to fetch VMs: {e}")
+        output.error(f"Failed to fetch VMs: {e}")

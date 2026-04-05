@@ -1,9 +1,7 @@
 import os
-
 import requests
-from dotenv import load_dotenv
-
-load_dotenv(os.path.expanduser("~/.ckart-cli/.env"))
+from ckart import output
+from ckart.utils import resolve_prefix
 
 
 def get_input(prompt, type_func=str):
@@ -12,14 +10,31 @@ def get_input(prompt, type_func=str):
         try:
             return type_func(input(f"{prompt}: "))
         except ValueError:
-            print("Invalid input. Please try again.")
+            output.warning("Invalid input. Please try again.")
 
 
 def handle(args):
     base_url = os.getenv("MGMT_SERVER")
-
-    provider_id = args.create  # Comes from CLI argument
     token = os.getenv("CKART_SESSION")
+
+    user_prefix = args.create
+    try:
+        list_url = f"{base_url}/providers/all" 
+        list_res = requests.get(list_url, headers={"Authorization": f"BearerCLI {token}"})
+        list_res.raise_for_status()
+        providers = list_res.json().get("providers", [])
+
+        provider_obj, err = resolve_prefix(providers, user_prefix, key="providerId")
+        if err:
+            output.error(err)
+            return
+            
+        provider_id = provider_obj["providerId"]
+        output.info(f"Using Provider: {provider_id}")
+        
+    except Exception as e:
+        output.error(f"Could not verify provider ID: {e}")
+        return
 
     # Step 2: Ask for vCPU, RAM, and Storage and verify
     vcpus = get_input("Enter required vCPUs", int)
@@ -29,7 +44,7 @@ def handle(args):
     # Step 3: Ask for VM Name & Remarks
     vm_name = get_input("Enter VM Name")
     if not vm_name:
-        print("VM Name cannot be empty. Please try again.")
+        output.error("VM name cannot be empty.")
         return
 
     remarks = get_input("Enter Remarks")
@@ -57,15 +72,16 @@ def handle(args):
         )
         data = response.json()
         if response.status_code == 200:
-            print("\n[+] VM created successfully!")
-            print(f"[+] {data.get('message')}")
+            output.success("VM created successfully!")
+            output.info(data.get("message", ""))
         elif response.status_code == 400:
-            print("[-] Bad request. Please check your input values and try again.")
-            print(data.get("error", "Unknown error."))
+            output.error("Bad request. Please check your values and try again.")
+            output.error(data.get("error", "Unknown error."))
         elif response.status_code == 500:
-            print("[-] Server error. Could not create VM. Please try again later.")
-            print(data.get("error", "Failed to reach provider."))
+            output.error("Server error. Could not create VM; try again later.")
+            output.error(data.get("error", "Failed to reach provider."))
         else:
-            print(f"[-] {data.get('error', 'Unknown error occurred.')}")
+            output.error(data.get("error", "Unknown error occurred."))
+
     except requests.exceptions.RequestException as e:
-        print(f"[-] Failed to create VM: {e}")
+        output.error(f"Failed to create VM: {e}")

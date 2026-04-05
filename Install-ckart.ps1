@@ -21,6 +21,9 @@ function Install-ckartCLI {
     $repoUrl = "git+https://github.com/ProjectIndra/Indra-cli.git"
     Write-Host "[*] Installing ckart CLI from GitHub..."
     python -m pip install --upgrade pip
+    if (Test-Path "requirements.txt") {
+        python -m pip install -r requirements.txt
+    }
     python -m pip install --upgrade --force-reinstall $repoUrl
 }
 
@@ -58,7 +61,7 @@ function Write-EnvFile {
         New-Item -ItemType Directory -Path $envDir | Out-Null
     }
 
-    $configPath = Join-Path $HOME "Documents\WireGuard\demo-client.conf"
+    $configPath = Join-Path $HOME ".ckart-cli\demo-client.conf"
 
     $content = @"
 MGMT_SERVER="https://backend.computekart.com"

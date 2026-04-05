@@ -47,9 +47,25 @@ function install_wireguard() {
 # Function to install ckart CLI
 function install_ckart_cli() {
     local repo_url="git+https://github.com/ProjectIndra/Indra-cli.git"
-    echo "[*] Installing ckart CLI from GitHub..."
-    python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade --force-reinstall "$repo_url"
+    local venv_dir="/opt/ckart-cli"
+    echo "[*] Installing ckart CLI from GitHub into a virtual environment..."
+    
+    # Ensure the venv exists
+    if [ ! -d "$venv_dir" ]; then
+        python3 -m venv "$venv_dir" || {
+            echo "[-] Failed to create venv. You may need to run: sudo apt install python3-venv"
+            exit 1
+        }
+    fi
+    
+    "$venv_dir/bin/python3" -m pip install --upgrade pip
+    if [ -f "requirements.txt" ]; then
+        "$venv_dir/bin/python3" -m pip install -r requirements.txt
+    fi
+    "$venv_dir/bin/python3" -m pip install --upgrade --force-reinstall "$repo_url"
+    
+    # Make the CLI globally available
+    ln -sf "$venv_dir/bin/ckart" /usr/local/bin/ckart
 }
 
 # Function to write .env file
@@ -57,7 +73,7 @@ function write_env_file() {
     local env_dir="$HOME/.ckart-cli"
     local env_file="$env_dir/.env"
     mkdir -p "$env_dir"
-    local config_path="$HOME/wg-demo-client.conf"
+    local config_path="$HOME/.ckart-cli/wg-demo-client.conf"
     cat > "$env_file" <<EOF
 MGMT_SERVER="https://backend.computekart.com"
 LISTEN_PORT=51820

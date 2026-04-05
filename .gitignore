@@ -9,3 +9,5 @@ ckart_cli.egg-info
 dist
 demo-client.conf
 .env1
+logs
+venv

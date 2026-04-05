@@ -24,6 +24,19 @@ def handle(args):
     try:
         response = requests.get(url, headers={"Authorization": f"BearerCLI {token}"})
         data = response.json()
+        if response.status_code == 200:
+            print(f"[+] VM '{args.remove}' removed successfully.")
+        elif response.status_code == 404:
+            print(f"[-] VM '{args.remove}' not found. Please check the VM name and try again.")
+        elif response.status_code == 500:
+            print(f"[-] Server error: {data.get('error', f'Error removing VM {args.remove}')}" )
+        else:
+            print(f"[-] {data.get('error', 'Unknown error occurred.')}")
+    except requests.exceptions.RequestException as e:
+        print(f"[-] Failed to remove VM '{args.remove}': {e}")
+    try:
+        response = requests.get(url, headers={"Authorization": f"BearerCLI {token}"})
+        data = response.json()
         
         if response.status_code == 200:
             print(f"[+] {data.get('message')}")

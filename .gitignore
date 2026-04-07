@@ -11,3 +11,4 @@ demo-client.conf
 .env1
 logs
 venv
+*.mp4

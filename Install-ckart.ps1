@@ -19,7 +19,15 @@ function Test-Python {
 
 function Install-ckartCLI {
     $repoUrl = "git+https://github.com/ProjectIndra/Indra-cli.git"
-    Write-Host "[*] Installing ckart CLI from GitHub..."
+    
+    # If run from within the repo, install local version for testing
+    if (Test-Path "pyproject.toml") {
+        $repoUrl = "."
+        Write-Host "[*] Found local pyproject.toml, installing local version..."
+    } else {
+        Write-Host "[*] Installing ckart CLI from GitHub..."
+    }
+
     python -m pip install --upgrade pip
     if (Test-Path "requirements.txt") {
         python -m pip install -r requirements.txt

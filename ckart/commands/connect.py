@@ -5,14 +5,10 @@ import subprocess
 import time
 import nacl.public
 import requests
-import sys
 import platform
 from ckart import output
 
-LISTEN_PORT = os.getenv("LISTEN_PORT")
-WIREGUARD_EXE = os.getenv("WIREGUARD_EXE")
-CONFIG_PATH = os.getenv("CONFIG_PATH")
-CONFIG_NAME = os.getenv("CONFIG_NAME")
+
 
 
 def generate_wireguard_keys():
@@ -37,9 +33,10 @@ def create_conf_file(
     address,
     peer_public_key,
     allowed_ips,
-     vm_peer_address,
+    vm_peer_address,
     endpoint,
     config_path,
+    LISTEN_PORT
 ):
     config_content = f"""[Interface]
 PrivateKey = {private_key}
@@ -59,7 +56,7 @@ PersistentKeepalive = 5
         f.write(config_content)
 
 
-def uninstall_tunnel(config_name):
+def uninstall_tunnel(config_name, WIREGUARD_EXE, CONFIG_PATH):
     if platform.system() == "Windows":
         try:
             subprocess.run([WIREGUARD_EXE, '/uninstalltunnelservice', config_name], check=True)
@@ -74,8 +71,8 @@ def uninstall_tunnel(config_name):
             print("No existing WireGuard interface to bring down.")
 
 
-def install_tunnel(config_path, config_name):
-    uninstall_tunnel(config_name)
+def install_tunnel(config_path, config_name, WIREGUARD_EXE):
+    uninstall_tunnel(config_name, WIREGUARD_EXE, config_path)
     time.sleep(1)
     if platform.system() == "Windows":
         try:
@@ -85,8 +82,8 @@ def install_tunnel(config_path, config_name):
             print(f"Failed to install tunnel.")
     else:
         try:
-            subprocess.run(["wg-quick", "up", CONFIG_PATH], check=True)
-            print(f"WireGuard interface '{CONFIG_PATH}' brought up.")
+            subprocess.run(["wg-quick", "up", config_path], check=True)
+            print(f"WireGuard interface '{config_path}' brought up.")
         except subprocess.CalledProcessError as e:
             print(f"Failed to bring up WireGuard interface: {e}")
 
@@ -122,6 +119,11 @@ def is_admin():
 def handle(args):
     base_url = os.getenv("MGMT_SERVER")
     token = os.getenv("CKART_SESSION")
+    LISTEN_PORT = os.getenv("LISTEN_PORT")
+    WIREGUARD_EXE = os.getenv("WIREGUARD_EXE")
+    CONFIG_PATH = os.getenv("CONFIG_PATH")
+    CONFIG_NAME = os.getenv("CONFIG_NAME")
+    # print(config_path, os.path.dirname(config_path))
 
     if args.connect != None:
         url = f"{base_url}/cli/wg/connect"
@@ -173,6 +175,7 @@ def handle(args):
             vm_peer_address=vm_peer_address,
             endpoint=endpoint,
             config_path=CONFIG_PATH,
+            LISTEN_PORT = LISTEN_PORT
         )
 
         if not is_admin():
@@ -184,7 +187,7 @@ def handle(args):
                 print("[-] This script requires root privileges. Please run with sudo.")
                 return
         print("[+] Running WireGuard tunnel service...")
-        install_tunnel(CONFIG_PATH,  CONFIG_NAME)
+        install_tunnel(CONFIG_PATH,  CONFIG_NAME, WIREGUARD_EXE)
         time.sleep(5)
         open_shell_with_ssh(username,  wireguard_ip)
     except requests.exceptions.RequestException as e:

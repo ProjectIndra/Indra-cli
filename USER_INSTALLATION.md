@@ -40,6 +40,14 @@ This will:
 -   Install the CLI from GitHub.
 -   Set up required environment variables.
 
+### Alternative: Install via Pip
+
+If you have Python and WireGuard already installed, you can install the CLI directly:
+
+```bash
+pip install --upgrade git+https://github.com/ProjectIndra/Indra-cli.git
+```
+
 ---
 
 ## 🔐 Environment Variables
